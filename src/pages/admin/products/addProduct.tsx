@@ -20,11 +20,10 @@ export default function AddProductPage() {
       const res = await axios.post(`${API_URL}/api/products`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-        }      })
+        }
+      })
 
       console.log('Yeni ürün eklendi:', res.data)
-
-      // Başarılı eklemeden sonra listeye dön
       router.push('/admin/products')
     } catch (err) {
       console.error(err)
