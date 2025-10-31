@@ -3,11 +3,10 @@ import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
 import ProductForm from '@/components/ProductForm'
 import { Product } from '@/types'
-import axios from 'axios'
-import { API_URL } from '@/utils/api'
 
 export default function AddProductPage() {
   const router = useRouter()
+  const api = process.env.NEXT_PUBLIC_API_URL
 
   const handleAddProduct = async (product: Product & { imageFile: File }) => {
     try {
@@ -17,18 +16,27 @@ export default function AddProductPage() {
       formData.append('stock', product.stock.toString())
       formData.append('image', product.imageFile)
 
-      const res = await axios.post(`${API_URL}/api/products`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
+      const res = await fetch(`${api}/api/products`, {
+        method: 'POST',
+        body: formData,
       })
 
-      console.log('Yeni ürün eklendi:', res.data)
+      if (!res.ok) {
+        throw new Error(`Sunucu hatası: ${res.status}`)
+      }
+
+      const data = await res.json()
+      console.log('Yeni ürün eklendi:', data)
       router.push('/admin/products')
-    } catch (err) {
-      console.error(err)
-      alert('Ürün eklerken hata oluştu')
-    }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error(err.message)
+        alert('Ürün eklerken hata oluştu: ' + err.message)
+      } else {
+        console.error(err)
+        alert('Ürün eklerken bilinmeyen bir hata oluştu')
+      }
+    }    
   }
 
   return (
