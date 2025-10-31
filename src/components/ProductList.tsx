@@ -5,6 +5,7 @@ export interface Product {
   price: number
   stock: number
   image?: string // opsiyonel fotoğraf alanı
+  _id: string    // benzersiz ID, rowKey için
 }
 
 interface Props {
@@ -12,13 +13,15 @@ interface Props {
 }
 
 const ProductList = ({ products }: Props) => {
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL
+
   const columns = [
     {
       title: 'Fotoğraf',
       dataIndex: 'image',
       key: 'image',
       render: (image: string) =>
-        image ? <Image src={`http://localhost:5000/uploads/${image}`} width={60} /> : null,
+        image ? <Image src={`${backendUrl}/uploads/${image}`} width={60} /> : null,
     },
     {
       title: 'Ürün Adı',
@@ -42,7 +45,7 @@ const ProductList = ({ products }: Props) => {
     <Table
       dataSource={products}
       columns={columns}
-      rowKey={(record) => record.name + record.price}
+      rowKey={(record) => record._id} // benzersiz id kullan
       pagination={false}
     />
   )
