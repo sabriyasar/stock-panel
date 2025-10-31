@@ -15,7 +15,7 @@ interface Props {
 }
 
 const ProductList = ({ products, onEdit, onDelete }: Props) => {
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://stock-panel-backend-1.onrender.com';
 
   const columns = [
     {
