@@ -14,6 +14,7 @@ export default function ProductsPage() {
     router.push('/admin/products/addProduct')
   }
 
+  // Ürünleri fetch et
   useEffect(() => {
     const fetchProducts = async () => {
       const api = process.env.NEXT_PUBLIC_API_URL
@@ -38,6 +39,27 @@ export default function ProductsPage() {
 
     fetchProducts()
   }, [])
+
+  // Ürün silme
+  const handleDeleteProduct = async (id: string) => {
+    const api = process.env.NEXT_PUBLIC_API_URL
+    try {
+      const res = await fetch(`${api}/api/products/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const errData = await res.json()
+        throw new Error(errData.error || 'Ürün silinemedi')
+      }
+      setProducts((prev) => prev.filter((p) => p._id !== id))
+    } catch (err: unknown) {
+      if (err instanceof Error) alert(err.message)
+      else alert('Bilinmeyen bir hata oluştu')
+    }
+  }
+
+  // Ürün düzenleme (örn: redirect veya modal açmak için)
+  const handleEditProduct = (product: Product) => {
+    router.push(`/admin/products/editProduct/${product._id}`)
+  }
 
   if (loading) {
     return (
@@ -77,7 +99,11 @@ export default function ProductsPage() {
           Ürün Ekle
         </button>
 
-        <ProductList products={products} />
+        <ProductList
+          products={products}
+          onDelete={handleDeleteProduct}
+          onEdit={handleEditProduct}
+        />
       </div>
     </DashboardLayout>
   )

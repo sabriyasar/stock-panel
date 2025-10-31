@@ -17,15 +17,21 @@ interface Props {
 const ProductList = ({ products, onEdit, onDelete }: Props) => {
   const backendUrl = process.env.NEXT_PUBLIC_API_URL
 
-  console.log('backendUrl', backendUrl)
-  
   const columns = [
     {
       title: 'Fotoğraf',
       dataIndex: 'image',
       key: 'image',
       render: (image: string | undefined) =>
-        image ? <Image src={`${backendUrl}/uploads/${image}`} width={60} /> : null,
+        image ? (
+          <Image
+            src={`${backendUrl}/uploads/${image}`}
+            width={60}
+            fallback="/placeholder.png"
+          />
+        ) : (
+          <Image src="/placeholder.png" width={60} />
+        ),
     },
     {
       title: 'Ürün Adı',
