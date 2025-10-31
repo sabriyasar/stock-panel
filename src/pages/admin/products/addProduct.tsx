@@ -4,6 +4,7 @@ import DashboardLayout from '@/components/DashboardLayout'
 import ProductForm from '@/components/ProductForm'
 import { Product } from '@/types'
 import axios from 'axios'
+import { API_URL } from '@/utils/api'
 
 export default function AddProductPage() {
   const router = useRouter()
@@ -16,7 +17,7 @@ export default function AddProductPage() {
       formData.append('stock', product.stock.toString())
       formData.append('image', product.imageFile)
 
-      const res = await axios.post('http://localhost:5000/api/products', formData, {
+      const res = await axios.post(`${API_URL}/api/products`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }      })
