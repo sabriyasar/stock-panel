@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import ProductList, { Product } from '@/components/ProductList'
 import axios from 'axios'
+import { API_URL } from '@/utils/api' // <-- API_URL import
 
 export default function ProductsPage() {
   const router = useRouter()
@@ -11,14 +12,14 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true)
 
   const handleAddProductClick = () => {
-    router.push('/admin/addProduct') // Ürün ekleme sayfasına yönlendir
+    router.push('/admin/products/addProduct') // Path prod ve local uyumlu
   }
 
   // Backend'den ürünleri çek
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get<Product[]>('http://localhost:5000/api/products')
+        const res = await axios.get<Product[]>(`${API_URL}/api/products`) // <-- API_URL kullan
         setProducts(res.data)
       } catch (err) {
         console.error('Ürünler alınamadı:', err)
@@ -29,6 +30,14 @@ export default function ProductsPage() {
 
     fetchProducts()
   }, [])
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <p>Yükleniyor...</p>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout>
