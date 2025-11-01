@@ -6,19 +6,19 @@ import type { RcFile, UploadFile } from 'antd/es/upload/interface'
 import { UploadOutlined, QrcodeOutlined } from '@ant-design/icons'
 import BarcodeScannerComponent from 'react-qr-barcode-scanner'
 
-// ✅ Product tipi
+// ✅ Product tipi (backend ile uyumlu)
 export interface Product {
   _id: string
   name: string
   price: number
   stock: number
-  image?: string
+  image?: { data: string; contentType: string }
   barcode?: string
 }
 
 // ✅ Props tipi
 interface Props {
-  product?: Product                 // Düzenleme için mevcut ürün
+  product?: Product
   onAddProduct: (product: Product & { imageFile?: File }) => void
   isEdit?: boolean
 }
@@ -140,22 +140,21 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
         footer={null}
       >
         <BarcodeScannerComponent
-  width={300}
-  height={300}
-  onUpdate={(err, result) => {
-    if (result) {
-      setScannerVisible(false)
-      const barcodeValue = result.getText()
-      form.setFieldValue('barcode', barcodeValue)
-      message.success('Barkod okundu: ' + barcodeValue)
+          width={300}
+          height={300}
+          onUpdate={(err, result) => {
+            if (result) {
+              setScannerVisible(false)
+              const barcodeValue = result.getText()
+              form.setFieldValue('barcode', barcodeValue)
+              message.success('Barkod okundu: ' + barcodeValue)
 
-      // 🔊 Barkod okuma sesi
-      const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg')
-      audio.play()
-    }
-  }}
-/>
-
+              // 🔊 Barkod okuma sesi
+              const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg')
+              audio.play()
+            }
+          }}
+        />
       </Modal>
     </>
   )

@@ -2,22 +2,12 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
-import ProductForm from '@/components/ProductForm'
-
-// ✅ Product tipi (AddProductPage içinde tanımlı)
-export interface Product {
-  _id: string
-  name: string
-  price: number
-  stock: number
-  image?: string
-}
+import ProductForm, { Product } from '@/components/ProductForm' // <-- Product tipini buradan al
 
 export default function AddProductPage() {
   const router = useRouter()
   const api = process.env.NEXT_PUBLIC_API_URL
 
-  // ✅ Ürün ekleme callback'i
   const handleAddProduct = async (product: Product & { imageFile?: File }) => {
     if (!product.imageFile) {
       alert('Lütfen bir ürün fotoğrafı seçin')
