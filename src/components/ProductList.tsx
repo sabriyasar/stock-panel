@@ -1,21 +1,16 @@
 'use client'
-import { Table, Image, Button, Popconfirm, Space } from 'antd'
+import { Table, Image, Button, Popconfirm, Space, message } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { useState } from 'react'
 
-// ✅ Product tipi (backend ile uyumlu)
 export interface Product {
   _id: string
   name: string
   price: number
   stock: number
-  image?: {
-    data: string // base64 string
-    contentType: string
-  }
+  image?: string // <-- artık string, direkt data URL
 }
 
-// ✅ Props tipi
 interface Props {
   products: Product[]
   onDelete: (id: string) => void
@@ -43,34 +38,26 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
       title: 'Fotoğraf',
       dataIndex: 'image',
       key: 'image',
-      render: (image) => (
+      render: (image: string | undefined) => (
         <Image
-          src={image ? `data:${image.contentType};base64,${image.data}` : '/assets/placeholder.jpg'}
+          src={image || '/assets/placeholder.jpg'}
           width={60}
           fallback="/assets/placeholder.jpg"
         />
       ),
     },
-    {
-      title: 'Ürün Adı',
-      dataIndex: 'name',
-      key: 'name',
-    },
+    { title: 'Ürün Adı', dataIndex: 'name', key: 'name' },
     {
       title: 'Fiyat',
       dataIndex: 'price',
       key: 'price',
       render: (price: number) => `${price.toLocaleString('tr-TR')} ₺`,
     },
-    {
-      title: 'Stok',
-      dataIndex: 'stock',
-      key: 'stock',
-    },
+    { title: 'Stok', dataIndex: 'stock', key: 'stock' },
     {
       title: 'İşlemler',
       key: 'actions',
-      render: (_, record) => (
+      render: (_: unknown, record: Product) => (
         <Space size="middle">
           <Button type="primary" onClick={() => handleEdit(record)}>
             Düzenle
@@ -90,7 +77,15 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
     },
   ]
 
-  return <Table dataSource={products} columns={columns} rowKey="._id" pagination={false} loading={loading} />
+  return (
+    <Table
+      dataSource={products}
+      columns={columns}
+      rowKey={(record) => record._id}
+      pagination={false}
+      loading={loading}
+    />
+  )
 }
 
 export default ProductList

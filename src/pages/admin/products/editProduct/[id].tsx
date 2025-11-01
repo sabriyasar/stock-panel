@@ -1,16 +1,20 @@
 // src/pages/admin/products/[id].tsx (EditProductPage)
+'use client'
+
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import ProductForm from '@/components/ProductForm'
-import { Product } from '@/components/ProductList'
 
-// ✅ ProductForm props tipi (edit için güncellenmiş)
-interface ProductFormProps {
-  product?: Product           // Düzenleme için mevcut ürün
-  onAddProduct: (product: Product & { imageFile?: File }) => void
-  isEdit?: boolean
+// ✅ Product tipi (ProductList ile uyumlu)
+export interface Product {
+  _id: string
+  name: string
+  price: number
+  stock: number
+  image?: string
+  barcode?: string
 }
 
 export default function EditProductPage() {
@@ -82,7 +86,11 @@ export default function EditProductPage() {
       </Head>
 
       <div style={{ maxWidth: 400, margin: '20px auto' }}>
-        <ProductForm product={product} onAddProduct={handleUpdateProduct} isEdit />
+        <ProductForm
+          product={product}
+          onAddProduct={handleUpdateProduct}
+          isEdit
+        />
       </div>
     </DashboardLayout>
   )

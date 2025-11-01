@@ -6,13 +6,13 @@ import type { RcFile, UploadFile } from 'antd/es/upload/interface'
 import { UploadOutlined, QrcodeOutlined } from '@ant-design/icons'
 import BarcodeScannerComponent from 'react-qr-barcode-scanner'
 
-// ✅ Product tipi (backend ile uyumlu)
+// ✅ Product tipi (frontend tüm komponentlerde uyumlu)
 export interface Product {
   _id: string
   name: string
   price: number
   stock: number
-  image?: { data: string; contentType: string }
+  image?: string // artık string, direkt data URL
   barcode?: string
 }
 
@@ -45,8 +45,22 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
         stock: product.stock,
         barcode: product.barcode || '',
       })
+  
+      // fileList'i mikro-task ile güncelle
+      if (product.image) {
+        setTimeout(() => {
+          setFileList([
+            {
+              uid: '-1',
+              name: 'image.jpg',
+              status: 'done',
+              url: product.image,
+            },
+          ])
+        }, 0)
+      }
     }
-  }, [product, form])
+  }, [product, form])  
 
   const handleBeforeUpload = (file: RcFile) => {
     setFileList([{ uid: file.uid, name: file.name, status: 'done', originFileObj: file }])
@@ -120,8 +134,11 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
             fileList={fileList}
             onRemove={() => setFileList([])}
             maxCount={1}
+            listType="picture"
           >
-            <Button icon={<UploadOutlined />}>{isEdit ? 'Fotoğraf Değiştir' : 'Fotoğraf Seç'}</Button>
+            <Button icon={<UploadOutlined />}>
+              {isEdit ? 'Fotoğraf Değiştir' : 'Fotoğraf Seç'}
+            </Button>
           </Upload>
         </Form.Item>
 
@@ -132,7 +149,6 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
         </Form.Item>
       </Form>
 
-      {/* Kamera barkod modal */}
       <Modal
         title="Barkodu okut"
         open={scannerVisible}
@@ -149,7 +165,6 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
               form.setFieldValue('barcode', barcodeValue)
               message.success('Barkod okundu: ' + barcodeValue)
 
-              // 🔊 Barkod okuma sesi
               const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg')
               audio.play()
             }
