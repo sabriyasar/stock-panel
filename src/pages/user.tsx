@@ -3,7 +3,7 @@ import { Typography, Card, Row, Col } from 'antd'
 
 const { Title, Paragraph } = Typography
 
-export default function AdminPanel() {
+export default function UserPanel() {
   return (
     <DashboardLayout>
       <Title level={2}>Admin Paneli</Title>

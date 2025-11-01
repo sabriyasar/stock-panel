@@ -1,0 +1,24 @@
+.user-login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #e0e7ff, #f0f4ff);
+    padding: 0 16px;
+  
+    .ant-form-item {
+      margin-bottom: 18px;
+    }
+  
+    button {
+      border-radius: 8px;
+      font-weight: 500;
+    }
+  
+    @media (max-width: 480px) {
+      .ant-typography {
+        font-size: 20px !important;
+      }
+    }
+  }
+  

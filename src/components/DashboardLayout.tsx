@@ -7,6 +7,7 @@ import {
   DashboardOutlined,
   ShoppingOutlined,
   SettingOutlined,
+  LogoutOutlined
 } from '@ant-design/icons'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -19,11 +20,25 @@ export default function DashboardLayout({ children }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null)
   const router = useRouter()
 
   const toggleMobileSidebar = () => setMobileOpen(!mobileOpen)
   const closeSidebar = () => setMobileOpen(false)
   const toggleCollapse = () => setCollapsed(!collapsed)
+
+  // Token kontrolü
+  useEffect(() => {
+    const token = localStorage.getItem('userToken')
+    const userInfo = localStorage.getItem('userInfo')
+  
+    if (!token || !userInfo) {
+      router.push('/user/login')
+    } else {
+      // Mikro task ile async yapıyoruz
+      Promise.resolve().then(() => setUser(JSON.parse(userInfo)))
+    }
+  }, [router])  
 
   useEffect(() => {
     const handleResize = () => {
@@ -36,6 +51,12 @@ export default function DashboardLayout({ children }: Props) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  const handleLogout = () => {
+    localStorage.removeItem('userToken')
+    localStorage.removeItem('userInfo')
+    router.push('/user/login')
+  }
+
   return (
     <div className={`dashboard-container ${collapsed ? 'collapsed' : ''}`}>
       {/* Sidebar */}
@@ -45,26 +66,30 @@ export default function DashboardLayout({ children }: Props) {
             <CloseOutlined className="close-icon" onClick={closeSidebar} />
           </div>
         )}
-        {!isMobile && <div className="logo">Admin</div>}
+        {!isMobile && <div className="logo">Kullanıcı Paneli</div>}
 
         <ul>
-          <li className={router.pathname === '/admin' ? 'active' : ''}>
-            <Link href="/admin">
+          <li className={router.pathname === '/user' ? 'active' : ''}>
+            <Link href="/user">
               <DashboardOutlined className="icon" />
               <span className="text">Dashboard</span>
             </Link>
           </li>
-          <li className={router.pathname === '/admin/products' ? 'active' : ''}>
-            <Link href="/admin/products">
+          <li className={router.pathname === '/user/products' ? 'active' : ''}>
+            <Link href="/user/products">
               <ShoppingOutlined className="icon" />
               <span className="text">Ürünler</span>
             </Link>
           </li>
-          <li className={router.pathname === '/admin/settings' ? 'active' : ''}>
-            <Link href="/admin/settings">
+          <li className={router.pathname === '/user/settings' ? 'active' : ''}>
+            <Link href="/user/settings">
               <SettingOutlined className="icon" />
               <span className="text">Ayarlar</span>
             </Link>
+          </li>
+          <li onClick={handleLogout} style={{ cursor: 'pointer', color: 'red', marginTop: 16 }}>
+            <LogoutOutlined className="icon" />
+            <span className="text">Çıkış Yap</span>
           </li>
         </ul>
 
@@ -83,8 +108,8 @@ export default function DashboardLayout({ children }: Props) {
               className="menu-icon"
               onClick={toggleMobileSidebar}
             />
-            <div className="mobile-title">Admin Paneli</div>
-            <div style={{ width: 24 }}></div>
+            <div className="mobile-title">{user?.name || 'Kullanıcı Paneli'}</div>
+            <LogoutOutlined onClick={handleLogout} style={{ fontSize: 20, cursor: 'pointer' }} />
           </div>
         )}
 

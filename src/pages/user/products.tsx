@@ -18,7 +18,7 @@ export default function ProductsPage() {
 
   // ✅ Ürün ekleme sayfasına yönlendirme
   const handleAddProductClick = () => {
-    router.push('/admin/products/addProduct')
+    router.push('/user/products/addProduct')
   }
 
   // ✅ Ürünleri fetch et
