@@ -45,12 +45,12 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
       key: 'image',
       render: (image: string | undefined) => (
         <Image
-          src={`${backendUrl}/uploads/${image ?? 'placeholder.jpg'}`}
+          src={image ? `data:image/png;base64,${image}` : '/assets/placeholder.jpg'}
           width={60}
           fallback="/assets/placeholder.jpg"
         />
       ),
-    },
+    },    
     {
       title: 'Ürün Adı',
       dataIndex: 'name',
