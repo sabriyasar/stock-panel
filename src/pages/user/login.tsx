@@ -32,7 +32,7 @@ export default function UserLoginPage() {
   const onFinish = async (values: LoginValues) => {
     setLoading(true)
     try {
-      const res = await api.post<LoginResponse>('/users/auth/login', values)
+      const res = await api.post<LoginResponse>('/api/users/auth/login', values)
       const { token, user } = res.data
       localStorage.setItem('userToken', token)
       localStorage.setItem('userInfo', JSON.stringify(user))
