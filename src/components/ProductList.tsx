@@ -9,7 +9,10 @@ export interface Product {
   name: string
   price: number
   stock: number
-  image?: string
+  image?: {
+    data: string // base64 string
+    contentType: string
+  }
 }
 
 // ✅ Props tipi (onDelete ve onEdit eklendi)
@@ -21,9 +24,7 @@ interface Props {
 
 const ProductList = ({ products, onDelete, onEdit }: Props) => {
   const [loading, setLoading] = useState(false)
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL
 
-  // ✅ Silme ve düzenleme işlemleri artık parent callback üzerinden yapılacak
   const handleDelete = (id: string) => {
     setLoading(true)
     try {
@@ -37,20 +38,23 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
     onEdit(product)
   }
 
-  // ✅ Ant Design Table columns tipi
   const columns: ColumnsType<Product> = [
     {
       title: 'Fotoğraf',
       dataIndex: 'image',
       key: 'image',
-      render: (image: string | undefined) => (
+      render: (image: { data: string; contentType: string } | undefined) => (
         <Image
-          src={image ? `data:image/png;base64,${image}` : '/assets/placeholder.jpg'}
+          src={
+            image
+              ? `data:${image.contentType};base64,${image.data}`
+              : '/assets/placeholder.jpg'
+          }
           width={60}
           fallback="/assets/placeholder.jpg"
         />
       ),
-    },    
+    },
     {
       title: 'Ürün Adı',
       dataIndex: 'name',
