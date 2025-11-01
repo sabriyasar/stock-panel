@@ -30,7 +30,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Admin Giriş</title>
+        <title>Kullanıcı Paneli</title>
         <meta name="description" content="Admin Login Page" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
@@ -53,7 +53,7 @@ export default function Home() {
           }}
         >
           <Title level={2} style={{ textAlign: 'center', marginBottom: 30 }}>
-            Admin Giriş
+            Kullanıcı Paneli
           </Title>
           <Form layout="vertical" onFinish={onFinish}>
             <Form.Item
