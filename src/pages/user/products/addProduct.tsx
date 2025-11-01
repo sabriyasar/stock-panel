@@ -32,7 +32,7 @@ export default function AddProductPage() {
 
       const data = await res.json()
       console.log('Yeni ürün eklendi:', data)
-      router.push('/admin/products')
+      router.push('/user/products')
     } catch (err: unknown) {
       if (err instanceof Error) {
         console.error(err.message)

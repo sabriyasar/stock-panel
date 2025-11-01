@@ -1,4 +1,4 @@
-// src/pages/admin/products/[id].tsx (EditProductPage)
+// src/pages/user/products/[id].tsx (EditProductPage)
 'use client'
 
 import Head from 'next/head'
@@ -68,7 +68,7 @@ export default function EditProductPage() {
         throw new Error(errData.error || 'Güncelleme başarısız')
       }
 
-      router.push('/admin/products')
+      router.push('/user/products')
     } catch (err: unknown) {
       if (err instanceof Error) alert(err.message)
       else alert('Bilinmeyen bir hata oluştu')

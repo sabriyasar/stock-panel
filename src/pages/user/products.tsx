@@ -62,7 +62,7 @@ export default function ProductsPage() {
 
   // ✅ Ürün düzenleme
   const handleEditProduct: ProductListCallbacks['onEdit'] = (product) => {
-    router.push(`/admin/products/editProduct/${product._id}`)
+    router.push(`/user/products/editProduct/${product._id}`)
   }
 
   if (loading) {
