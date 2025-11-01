@@ -1,41 +1,63 @@
-import { useState } from 'react'
+'use client'
+import { useState, useEffect } from 'react'
 import { Form, Input, InputNumber, Button, Upload, message } from 'antd'
 import type { RcFile, UploadFile } from 'antd/es/upload/interface'
 import { UploadOutlined } from '@ant-design/icons'
-import { Product } from '@/types'
 
-interface Props {
-  onAddProduct: (product: Product & { imageFile: File }) => void
+// ✅ Product tipi (sadece burada tanımlı)
+export interface Product {
+  _id: string
+  name: string
+  price: number
+  stock: number
+  image?: string
 }
 
-// Form değerleri için tip
+// ✅ Props tipi
+interface Props {
+  product?: Product                 // Düzenleme için mevcut ürün
+  onAddProduct: (product: Product & { imageFile?: File }) => void
+  isEdit?: boolean
+}
+
+// ✅ Form değerleri için tip
 interface ProductFormValues {
   name: string
   price: number
   stock: number
 }
 
-const ProductForm = ({ onAddProduct }: Props) => {
+// ✅ ProductForm bileşeni
+const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
   const [form] = Form.useForm<ProductFormValues>()
   const [fileList, setFileList] = useState<UploadFile[]>([])
 
-  const onFinish = (values: ProductFormValues) => {
-    if (fileList.length === 0) {
-      message.error('Lütfen bir ürün fotoğrafı seçin')
-      return
+  // Edit modunda formu doldur
+  useEffect(() => {
+    if (product) {
+      form.setFieldsValue({
+        name: product.name,
+        price: product.price,
+        stock: product.stock,
+      })
     }
+  }, [product, form])
 
-    const imageFile = fileList[0].originFileObj as RcFile
+  const onFinish = (values: ProductFormValues) => {
+    const imageFile = fileList[0]?.originFileObj as RcFile | undefined
 
     // Parent component’e veriyi gönder
     onAddProduct({
       ...values,
-      imageFile,
+      _id: product?._id ?? '', // edit modunda _id ekle
+      imageFile,               // opsiyonel
     })
 
-    form.resetFields()
-    setFileList([])
-    message.success('Form başarıyla gönderildi!')
+    if (!isEdit) {
+      form.resetFields()
+      setFileList([])
+      message.success('Form başarıyla gönderildi!')
+    }
   }
 
   const handleBeforeUpload = (file: RcFile) => {
@@ -76,13 +98,13 @@ const ProductForm = ({ onAddProduct }: Props) => {
           onRemove={() => setFileList([])}
           maxCount={1}
         >
-          <Button icon={<UploadOutlined />}>Fotoğraf Seç</Button>
+          <Button icon={<UploadOutlined />}>{isEdit ? 'Fotoğraf Değiştir' : 'Fotoğraf Seç'}</Button>
         </Upload>
       </Form.Item>
 
       <Form.Item>
         <Button type="primary" htmlType="submit" block>
-          Ürün Ekle
+          {isEdit ? 'Güncelle' : 'Ürün Ekle'}
         </Button>
       </Form.Item>
     </Form>

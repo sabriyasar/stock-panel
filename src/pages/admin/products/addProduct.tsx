@@ -1,14 +1,29 @@
+'use client'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
 import ProductForm from '@/components/ProductForm'
-import { Product } from '@/types'
+
+// ✅ Product tipi (AddProductPage içinde tanımlı)
+export interface Product {
+  _id: string
+  name: string
+  price: number
+  stock: number
+  image?: string
+}
 
 export default function AddProductPage() {
   const router = useRouter()
   const api = process.env.NEXT_PUBLIC_API_URL
 
-  const handleAddProduct = async (product: Product & { imageFile: File }) => {
+  // ✅ Ürün ekleme callback'i
+  const handleAddProduct = async (product: Product & { imageFile?: File }) => {
+    if (!product.imageFile) {
+      alert('Lütfen bir ürün fotoğrafı seçin')
+      return
+    }
+
     try {
       const formData = new FormData()
       formData.append('name', product.name)
@@ -36,7 +51,7 @@ export default function AddProductPage() {
         console.error(err)
         alert('Ürün eklerken bilinmeyen bir hata oluştu')
       }
-    }    
+    }
   }
 
   return (

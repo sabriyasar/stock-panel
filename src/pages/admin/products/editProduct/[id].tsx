@@ -6,12 +6,19 @@ import DashboardLayout from '@/components/DashboardLayout'
 import ProductForm from '@/components/ProductForm'
 import { Product } from '@/components/ProductList'
 
+// ✅ ProductForm props tipi (edit için güncellenmiş)
+interface ProductFormProps {
+  product?: Product           // Düzenleme için mevcut ürün
+  onAddProduct: (product: Product & { imageFile?: File }) => void
+  isEdit?: boolean
+}
+
 export default function EditProductPage() {
   const router = useRouter()
   const { id } = router.query
 
   const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -36,6 +43,7 @@ export default function EditProductPage() {
     fetchProduct()
   }, [id])
 
+  // ✅ Ürün güncelleme callback’i
   const handleUpdateProduct = async (updated: Product & { imageFile?: File }) => {
     if (!id) return
     const api = process.env.NEXT_PUBLIC_API_URL

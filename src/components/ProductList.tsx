@@ -1,8 +1,9 @@
 'use client'
 import { Table, Image, Button, Popconfirm, Space, message } from 'antd'
-import axios from 'axios'
+import { ColumnsType } from 'antd/es/table'
 import { useState } from 'react'
 
+// ✅ Product tipi
 export interface Product {
   _id: string
   name: string
@@ -11,69 +12,44 @@ export interface Product {
   image?: string
 }
 
+// ✅ Props tipi (onDelete ve onEdit eklendi)
 interface Props {
   products: Product[]
-  onRefresh: () => Promise<void> // ✅ dışarıdan tabloyu yenilemek için callback
+  onDelete: (id: string) => void
+  onEdit: (product: Product) => void
 }
 
-const ProductList = ({ products, onRefresh }: Props) => {
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL
+const ProductList = ({ products, onDelete, onEdit }: Props) => {
   const [loading, setLoading] = useState(false)
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL
 
-  // ✅ Ürün silme işlemi
-  const handleDelete = async (id: string) => {
+  // ✅ Silme ve düzenleme işlemleri artık parent callback üzerinden yapılacak
+  const handleDelete = (id: string) => {
+    setLoading(true)
     try {
-      setLoading(true)
-      await axios.delete(`${backendUrl}/api/products/${id}`)
-      message.success('Ürün başarıyla silindi')
-      await onRefresh() // tabloyu yenile
-    } catch (err) {
-      console.error(err)
-      message.error('Ürün silinirken bir hata oluştu')
+      onDelete(id)
     } finally {
       setLoading(false)
     }
   }
 
-  // ✅ Ürün düzenleme işlemi (örnek olarak fiyat + stok güncelleme)
-  const handleEdit = async (product: Product) => {
-    try {
-      const newName = prompt('Yeni ürün adı:', product.name)
-      const newPrice = prompt('Yeni fiyat:', String(product.price))
-      const newStock = prompt('Yeni stok:', String(product.stock))
-      if (!newName || !newPrice || !newStock) return
-
-      setLoading(true)
-      await axios.put(`${backendUrl}/api/products/${product._id}`, {
-        name: newName,
-        price: Number(newPrice),
-        stock: Number(newStock),
-      })
-      message.success('Ürün başarıyla güncellendi')
-      await onRefresh()
-    } catch (err) {
-      console.error(err)
-      message.error('Ürün güncellenirken bir hata oluştu')
-    } finally {
-      setLoading(false)
-    }
+  const handleEdit = (product: Product) => {
+    onEdit(product)
   }
 
-  const columns = [
+  // ✅ Ant Design Table columns tipi
+  const columns: ColumnsType<Product> = [
     {
       title: 'Fotoğraf',
       dataIndex: 'image',
       key: 'image',
-      render: (image: string | undefined) =>
-        image ? (
-          <Image
-            src={`${backendUrl}/uploads/${image}`}
-            width={60}
-            fallback="/assets/placeholder.jpg"
-          />
-        ) : (
-          <Image src="/assets/placeholder.jpg" width={60} />
-        ),
+      render: (image: string | undefined) => (
+        <Image
+          src={`${backendUrl}/uploads/${image ?? 'placeholder.jpg'}`}
+          width={60}
+          fallback="/assets/placeholder.jpg"
+        />
+      ),
     },
     {
       title: 'Ürün Adı',

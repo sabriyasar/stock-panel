@@ -4,17 +4,24 @@ import { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import ProductList, { Product } from '@/components/ProductList'
 
+// ✅ ProductList için callback tipleri
+interface ProductListCallbacks {
+  onDelete: (id: string) => void
+  onEdit: (product: Product) => void
+}
+
 export default function ProductsPage() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
+  // ✅ Ürün ekleme sayfasına yönlendirme
   const handleAddProductClick = () => {
     router.push('/admin/products/addProduct')
   }
 
-  // Ürünleri fetch et
+  // ✅ Ürünleri fetch et
   useEffect(() => {
     const fetchProducts = async () => {
       const api = process.env.NEXT_PUBLIC_API_URL
@@ -27,11 +34,8 @@ export default function ProductsPage() {
         const data = await res.json()
         setProducts(data as Product[])
       } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message)
-        } else {
-          setError('Bilinmeyen bir hata oluştu')
-        }
+        if (err instanceof Error) setError(err.message)
+        else setError('Bilinmeyen bir hata oluştu')
       } finally {
         setLoading(false)
       }
@@ -40,8 +44,8 @@ export default function ProductsPage() {
     fetchProducts()
   }, [])
 
-  // Ürün silme
-  const handleDeleteProduct = async (id: string) => {
+  // ✅ Ürün silme
+  const handleDeleteProduct: ProductListCallbacks['onDelete'] = async (id) => {
     const api = process.env.NEXT_PUBLIC_API_URL
     try {
       const res = await fetch(`${api}/api/products/${id}`, { method: 'DELETE' })
@@ -56,8 +60,8 @@ export default function ProductsPage() {
     }
   }
 
-  // Ürün düzenleme (örn: redirect veya modal açmak için)
-  const handleEditProduct = (product: Product) => {
+  // ✅ Ürün düzenleme
+  const handleEditProduct: ProductListCallbacks['onEdit'] = (product) => {
     router.push(`/admin/products/editProduct/${product._id}`)
   }
 
