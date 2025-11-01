@@ -18,7 +18,7 @@ export default function Home() {
         message.success('Giriş başarılı! Yönlendiriliyorsunuz...')
         // 1 saniye sonra admin paneline yönlendirme
         setTimeout(() => {
-          router.push('/admin')
+          router.push('/user')
         }, 1000)
       } else {
         message.error('Geçersiz email veya parola')

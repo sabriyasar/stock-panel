@@ -1,5 +1,5 @@
 'use client'
-import { Table, Image, Button, Popconfirm, Space, message } from 'antd'
+import { Table, Image, Button, Popconfirm, Space } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { useState } from 'react'
 
