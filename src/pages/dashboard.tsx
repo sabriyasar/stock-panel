@@ -7,9 +7,10 @@ import axios from 'axios'
 const { Title, Paragraph } = Typography
 
 interface Stats {
-  totalProducts: number
+  totalProducts: number    // Başlangıçta eklenen toplam ürün sayısı
   inStock: number
   outOfStock: number
+  deleted: number          // Silinen ürün sayısı
 }
 
 export default function UserPanel() {
@@ -17,6 +18,7 @@ export default function UserPanel() {
     totalProducts: 0,
     inStock: 0,
     outOfStock: 0,
+    deleted: 0
   })
 
   useEffect(() => {
@@ -24,7 +26,10 @@ export default function UserPanel() {
       try {
         const api = process.env.NEXT_PUBLIC_API_URL
         const res = await axios.get(`${api}/api/users/stats/products`)
-        setStats(res.data)
+        const data = res.data
+        // Silinen ürün sayısını hesapla
+        const deletedCount = data.totalProducts - data.inStock - data.outOfStock
+        setStats({ ...data, deleted: deletedCount })
       } catch (err) {
         console.error(err)
         message.error('Ürün istatistikleri alınamadı')
@@ -40,19 +45,24 @@ export default function UserPanel() {
       <Paragraph>Buradan ürünleri görebilir ve yönetebilirsiniz.</Paragraph>
 
       <Row gutter={16}>
-        <Col span={8}>
+        <Col span={6}>
           <Card title="Toplam Ürün" bordered={false}>
             {stats.totalProducts}
           </Card>
         </Col>
-        <Col span={8}>
+        <Col span={6}>
           <Card title="Stokta Ürün" bordered={false}>
             {stats.inStock}
           </Card>
         </Col>
-        <Col span={8}>
+        <Col span={6}>
           <Card title="Stoğu Biten Ürün" bordered={false}>
             {stats.outOfStock}
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card title="Silinen Ürün" bordered={false}>
+            {stats.deleted}
           </Card>
         </Col>
       </Row>
