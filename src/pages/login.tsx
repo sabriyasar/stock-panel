@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Form, Input, Button, message } from 'antd'
 import { MailOutlined, LockOutlined } from '@ant-design/icons'
-import api from '@/services/api'
-import { AxiosError } from 'axios'
+import axios, { AxiosError } from 'axios'
 import { io } from 'socket.io-client'
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL)
@@ -22,14 +21,19 @@ export default function UserLoginPage() {
   const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true)
     try {
-      const res = await api.post('/api/users/auth/login', values)
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/auth/login`,
+        values,
+        { headers: { 'Content-Type': 'application/json' } }
+      )
+
       const { token, user } = res.data
 
       // LocalStorage’a kaydet
       localStorage.setItem('userToken', token)
       localStorage.setItem('userInfo', JSON.stringify(user))
 
-      // ✅ Kullanıcı çevrimiçi event’i gönder
+      // Kullanıcı çevrimiçi event’i gönder
       socket.emit('user_online', user._id)
 
       message.success('Giriş başarılı')
