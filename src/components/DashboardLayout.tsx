@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }: Props) {
     const userInfo = localStorage.getItem('userInfo')
   
     if (!token || !userInfo) {
-      router.push('/user/login')
+      router.push('/login')
     } else {
       // Mikro task ile async yapıyoruz
       Promise.resolve().then(() => setUser(JSON.parse(userInfo)))
@@ -54,7 +54,7 @@ export default function DashboardLayout({ children }: Props) {
   const handleLogout = () => {
     localStorage.removeItem('userToken')
     localStorage.removeItem('userInfo')
-    router.push('/user/login')
+    router.push('/login')
   }
 
   return (
