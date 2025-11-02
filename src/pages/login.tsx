@@ -8,7 +8,7 @@ import api from '@/services/api'
 import { AxiosError } from 'axios'
 import { io } from 'socket.io-client'
 
-const socket = io(process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050')
+const socket = io(process.env.NEXT_PUBLIC_API_BASE_URL)
 
 export default function UserLoginPage() {
   const router = useRouter()
