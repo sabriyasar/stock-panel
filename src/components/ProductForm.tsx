@@ -45,8 +45,7 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
         stock: product.stock,
         barcode: product.barcode || '',
       })
-  
-      // fileList'i mikro-task ile güncelle
+
       if (product.image) {
         setTimeout(() => {
           setFileList([
@@ -60,7 +59,7 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
         }, 0)
       }
     }
-  }, [product, form])  
+  }, [product, form])
 
   const handleBeforeUpload = (file: RcFile) => {
     setFileList([{ uid: file.uid, name: file.name, status: 'done', originFileObj: file }])
@@ -70,6 +69,7 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
   const onFinish = (values: ProductFormValues) => {
     const imageFile = fileList[0]?.originFileObj as RcFile | undefined
 
+    // Barcode ve image artık opsiyonel
     onAddProduct({
       ...values,
       _id: product?._id ?? '',

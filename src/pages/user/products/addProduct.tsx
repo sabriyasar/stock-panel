@@ -2,24 +2,26 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
-import ProductForm, { Product } from '@/components/ProductForm' // <-- Product tipini buradan al
+import ProductForm, { Product } from '@/components/ProductForm'
 
 export default function AddProductPage() {
   const router = useRouter()
   const api = process.env.NEXT_PUBLIC_API_URL
 
   const handleAddProduct = async (product: Product & { imageFile?: File }) => {
-    if (!product.imageFile) {
-      alert('Lütfen bir ürün fotoğrafı seçin')
-      return
-    }
-
     try {
       const formData = new FormData()
       formData.append('name', product.name)
       formData.append('price', product.price.toString())
       formData.append('stock', product.stock.toString())
-      formData.append('image', product.imageFile)
+
+      // Opsiyonel alanları ekle
+      if (product.barcode) {
+        formData.append('barcode', product.barcode)
+      }
+      if (product.imageFile) {
+        formData.append('image', product.imageFile)
+      }
 
       const res = await fetch(`${api}/api/products`, {
         method: 'POST',
