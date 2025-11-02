@@ -6,6 +6,9 @@ import { Form, Input, Button, message } from 'antd'
 import { MailOutlined, LockOutlined } from '@ant-design/icons'
 import api from '@/services/api'
 import { AxiosError } from 'axios'
+import { io } from 'socket.io-client'
+
+const socket = io(process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050')
 
 export default function UserLoginPage() {
   const router = useRouter()
@@ -25,6 +28,9 @@ export default function UserLoginPage() {
       // LocalStorage’a kaydet
       localStorage.setItem('userToken', token)
       localStorage.setItem('userInfo', JSON.stringify(user))
+
+      // ✅ Kullanıcı çevrimiçi event’i gönder
+      socket.emit('user_online', user._id)
 
       message.success('Giriş başarılı')
       router.push('/dashboard')
