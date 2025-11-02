@@ -51,9 +51,14 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
       title: 'Fiyat',
       dataIndex: 'price',
       key: 'price',
-      render: (price: number) => `${price.toLocaleString('tr-TR')} ₺`,
+      render: (price?: number) => `${(price ?? 0).toLocaleString('tr-TR')} ₺`,
     },
-    { title: 'Stok', dataIndex: 'stock', key: 'stock' },
+    {
+      title: 'Stok',
+      dataIndex: 'stock',
+      key: 'stock',
+      render: (stock?: number) => (stock ?? 0).toLocaleString('tr-TR'),
+    },    
     {
       title: 'İşlemler',
       key: 'actions',

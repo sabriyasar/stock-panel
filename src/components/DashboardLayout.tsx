@@ -70,7 +70,7 @@ export default function DashboardLayout({ children }: Props) {
 
         <ul>
           <li className={router.pathname === '/user' ? 'active' : ''}>
-            <Link href="/user">
+            <Link href="/dashboard">
               <DashboardOutlined className="icon" />
               <span className="text">Dashboard</span>
             </Link>
