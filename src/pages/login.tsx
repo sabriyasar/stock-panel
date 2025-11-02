@@ -13,7 +13,7 @@ export default function UserLoginPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('userToken')
-    if (token) router.push('/dashboard')
+    if (token) router.push('/user/dashboard')
   }, [router])
 
   const onFinish = async (values: { email: string; password: string }) => {
