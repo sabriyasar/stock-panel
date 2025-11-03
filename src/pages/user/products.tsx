@@ -17,17 +17,23 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-  const [token, setToken] = useState<string>('') // 🔹 client-side token state
+  const [token, setToken] = useState<string>('')
 
   // ✅ Client-side token al
   useEffect(() => {
-    const t = localStorage.getItem('token') || ''
+    const t = localStorage.getItem('token')
+    if (!t) {
+      setError('Token bulunamadı. Lütfen giriş yapın.')
+      setLoading(false)
+      return
+    }
     setToken(t)
   }, [])
 
-  // ✅ Ürünleri fetch et (token hazır olunca)
+  // ✅ Token hazır olduğunda ürünleri fetch et
   useEffect(() => {
-    if (!token) return // token yoksa fetch etme
+    if (!token) return
+
     const fetchProducts = async () => {
       console.log('🌟 Token gönderiliyor:', token)
       try {
@@ -58,6 +64,7 @@ export default function ProductsPage() {
       })
       setProducts((prev) => prev.filter((p) => p._id !== id))
     } catch (err: unknown) {
+      console.error('❌ Silme hatası:', err)
       if (axios.isAxiosError(err)) alert(err.response?.data?.error || err.message)
       else if (err instanceof Error) alert(err.message)
       else alert('Bilinmeyen bir hata oluştu')
