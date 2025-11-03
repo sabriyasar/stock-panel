@@ -28,12 +28,15 @@ export default function ProductsPage() {
   // ✅ Ürünleri fetch et
   useEffect(() => {
     const fetchProducts = async () => {
+      console.log('🌟 Token gönderiliyor:', token) // 🔹 buraya log ekledik
       try {
         const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
           headers: { Authorization: `Bearer ${token}` },
         })
+        console.log('✅ Backend yanıtı:', res.data) // 🔹 backend'den gelen yanıt
         setProducts(res.data as Product[])
       } catch (err: unknown) {
+        console.error('❌ Hata:', err)
         if (axios.isAxiosError(err)) setError(err.response?.data?.error || err.message)
         else if (err instanceof Error) setError(err.message)
         else setError('Bilinmeyen bir hata oluştu')
@@ -41,9 +44,9 @@ export default function ProductsPage() {
         setLoading(false)
       }
     }
-
+  
     fetchProducts()
-  }, [token])
+  }, [token])  
 
   // ✅ Ürün silme
   const handleDeleteProduct: ProductListCallbacks['onDelete'] = async (id) => {
