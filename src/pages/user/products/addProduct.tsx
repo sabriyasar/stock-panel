@@ -3,6 +3,7 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 import DashboardLayout from '@/components/DashboardLayout'
 import ProductForm, { Product } from '@/components/ProductForm'
+import axios from 'axios'
 
 export default function AddProductPage() {
   const router = useRouter()
@@ -16,27 +17,23 @@ export default function AddProductPage() {
       formData.append('stock', product.stock.toString())
 
       // Opsiyonel alanları ekle
-      if (product.barcode) {
-        formData.append('barcode', product.barcode)
-      }
-      if (product.imageFile) {
-        formData.append('image', product.imageFile)
-      }
+      if (product.barcode) formData.append('barcode', product.barcode)
+      if (product.imageFile) formData.append('image', product.imageFile)
 
-      const res = await fetch(`${api}/api/products`, {
-        method: 'POST',
-        body: formData,
+      const res = await axios.post(`${api}/api/products`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('userToken')}`, // token eklendi
+        },
       })
 
-      if (!res.ok) {
-        throw new Error(`Sunucu hatası: ${res.status}`)
-      }
-
-      const data = await res.json()
-      console.log('Yeni ürün eklendi:', data)
+      console.log('Yeni ürün eklendi:', res.data)
       router.push('/user/products')
     } catch (err: unknown) {
-      if (err instanceof Error) {
+      if (axios.isAxiosError(err)) {
+        console.error('Ürün ekleme hatası:', err.response?.data || err.message)
+        alert('Ürün eklerken hata oluştu: ' + (err.response?.data?.error || err.message))
+      } else if (err instanceof Error) {
         console.error(err.message)
         alert('Ürün eklerken hata oluştu: ' + err.message)
       } else {
