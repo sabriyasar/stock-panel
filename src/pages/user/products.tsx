@@ -23,52 +23,53 @@ export default function ProductsPage() {
   }
 
   // ✅ Ürünleri fetch et (axios + token)
-  useEffect(() => {
-    const fetchProducts = async () => {
-      const api = process.env.NEXT_PUBLIC_API_URL
-      try {
-        const res = await axios.get(`${api}/api/products`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-        setProducts(res.data as Product[])
-      } catch (err: unknown) {
-        if (axios.isAxiosError(err)) {
-          setError(err.response?.data?.error || 'Ürünler alınamadı')
-        } else if (err instanceof Error) {
-          setError(err.message)
-        } else {
-          setError('Bilinmeyen bir hata oluştu')
-        }
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProducts()
-  }, [])
-
-  // ✅ Ürün silme
-  const handleDeleteProduct: ProductListCallbacks['onDelete'] = async (id) => {
+  // ✅ Ürünleri fetch et (axios + token)
+useEffect(() => {
+  const fetchProducts = async () => {
     const api = process.env.NEXT_PUBLIC_API_URL
     try {
-      await axios.delete(`${api}/api/products/${id}`, {
+      const res = await axios.get(`${api}/api/products`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('userToken')}`, // burayı düzelt
         },
       })
-      setProducts((prev) => prev.filter((p) => p._id !== id))
+      setProducts(res.data as Product[])
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        alert(err.response?.data?.error || 'Ürün silinemedi')
+        setError(err.response?.data?.error || 'Ürünler alınamadı')
       } else if (err instanceof Error) {
-        alert(err.message)
+        setError(err.message)
       } else {
-        alert('Bilinmeyen bir hata oluştu')
+        setError('Bilinmeyen bir hata oluştu')
       }
+    } finally {
+      setLoading(false)
     }
   }
+
+  fetchProducts()
+}, [])
+
+// ✅ Ürün silme
+const handleDeleteProduct: ProductListCallbacks['onDelete'] = async (id) => {
+  const api = process.env.NEXT_PUBLIC_API_URL
+  try {
+    await axios.delete(`${api}/api/products/${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('userToken')}`, // burayı düzelt
+      },
+    })
+    setProducts((prev) => prev.filter((p) => p._id !== id))
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      alert(err.response?.data?.error || 'Ürün silinemedi')
+    } else if (err instanceof Error) {
+      alert(err.message)
+    } else {
+      alert('Bilinmeyen bir hata oluştu')
+    }
+  }
+}
 
   // ✅ Ürün düzenleme
   const handleEditProduct: ProductListCallbacks['onEdit'] = (product) => {
