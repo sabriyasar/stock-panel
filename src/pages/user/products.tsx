@@ -17,23 +17,24 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const [token, setToken] = useState<string>('') // 🔹 client-side token state
 
-  const token = localStorage.getItem('token') || ''
-
-  // ✅ Ürün ekleme sayfasına yönlendirme
-  const handleAddProductClick = () => {
-    router.push('/user/products/addProduct')
-  }
-
-  // ✅ Ürünleri fetch et
+  // ✅ Client-side token al
   useEffect(() => {
+    const t = localStorage.getItem('token') || ''
+    setToken(t)
+  }, [])
+
+  // ✅ Ürünleri fetch et (token hazır olunca)
+  useEffect(() => {
+    if (!token) return // token yoksa fetch etme
     const fetchProducts = async () => {
-      console.log('🌟 Token gönderiliyor:', token) // 🔹 buraya log ekledik
+      console.log('🌟 Token gönderiliyor:', token)
       try {
         const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
           headers: { Authorization: `Bearer ${token}` },
         })
-        console.log('✅ Backend yanıtı:', res.data) // 🔹 backend'den gelen yanıt
+        console.log('✅ Backend yanıtı:', res.data)
         setProducts(res.data as Product[])
       } catch (err: unknown) {
         console.error('❌ Hata:', err)
@@ -44,12 +45,13 @@ export default function ProductsPage() {
         setLoading(false)
       }
     }
-  
+
     fetchProducts()
-  }, [token])  
+  }, [token])
 
   // ✅ Ürün silme
   const handleDeleteProduct: ProductListCallbacks['onDelete'] = async (id) => {
+    if (!token) return
     try {
       await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -62,7 +64,6 @@ export default function ProductsPage() {
     }
   }
 
-  // ✅ Ürün düzenleme
   const handleEditProduct: ProductListCallbacks['onEdit'] = (product) => {
     router.push(`/user/products/editProduct/${product._id}`)
   }
@@ -100,7 +101,7 @@ export default function ProductsPage() {
             cursor: 'pointer',
             alignSelf: 'flex-start',
           }}
-          onClick={handleAddProductClick}
+          onClick={() => router.push('/user/products/addProduct')}
         >
           Ürün Ekle
         </button>
