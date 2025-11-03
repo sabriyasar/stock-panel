@@ -17,33 +17,32 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-  const [token, setToken] = useState<string>('')
+  const [token, setToken] = useState<string | null>(null)
+  const [checkedToken, setCheckedToken] = useState(false) // token kontrol flag
 
   // ✅ Client-side token al
   useEffect(() => {
     const t = localStorage.getItem('token')
     if (!t) {
-      setError('Token bulunamadı. Lütfen giriş yapın.')
-      setLoading(false)
-      return
+      setToken(null)
+    } else {
+      setToken(t)
     }
-    setToken(t)
+    setCheckedToken(true)
   }, [])
 
-  // ✅ Token hazır olduğunda ürünleri fetch et
+  // ✅ Token hazır olunca ürünleri fetch et
   useEffect(() => {
-    if (!token) return
+    if (!checkedToken) return // token kontrol edilmediyse bekle
+    if (!token) return // token yoksa fetch etme
 
     const fetchProducts = async () => {
-      console.log('🌟 Token gönderiliyor:', token)
       try {
         const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
           headers: { Authorization: `Bearer ${token}` },
         })
-        console.log('✅ Backend yanıtı:', res.data)
         setProducts(res.data as Product[])
       } catch (err: unknown) {
-        console.error('❌ Hata:', err)
         if (axios.isAxiosError(err)) setError(err.response?.data?.error || err.message)
         else if (err instanceof Error) setError(err.message)
         else setError('Bilinmeyen bir hata oluştu')
@@ -53,32 +52,20 @@ export default function ProductsPage() {
     }
 
     fetchProducts()
-  }, [token])
+  }, [token, checkedToken])
 
-  // ✅ Ürün silme
-  const handleDeleteProduct: ProductListCallbacks['onDelete'] = async (id) => {
-    if (!token) return
-    try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      setProducts((prev) => prev.filter((p) => p._id !== id))
-    } catch (err: unknown) {
-      console.error('❌ Silme hatası:', err)
-      if (axios.isAxiosError(err)) alert(err.response?.data?.error || err.message)
-      else if (err instanceof Error) alert(err.message)
-      else alert('Bilinmeyen bir hata oluştu')
-    }
-  }
-
-  const handleEditProduct: ProductListCallbacks['onEdit'] = (product) => {
-    router.push(`/user/products/editProduct/${product._id}`)
-  }
-
-  if (loading) {
+  if (!checkedToken || loading) {
     return (
       <DashboardLayout>
         <p>Yükleniyor...</p>
+      </DashboardLayout>
+    )
+  }
+
+  if (!token) {
+    return (
+      <DashboardLayout>
+        <p style={{ color: 'red' }}>Lütfen giriş yapın.</p>
       </DashboardLayout>
     )
   }
@@ -89,6 +76,28 @@ export default function ProductsPage() {
         <p style={{ color: 'red' }}>Hata: {error}</p>
       </DashboardLayout>
     )
+  }
+
+  const handleAddProductClick = () => {
+    router.push('/user/products/addProduct')
+  }
+
+  const handleDeleteProduct: ProductListCallbacks['onDelete'] = async (id) => {
+    if (!token) return
+    try {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setProducts((prev) => prev.filter((p) => p._id !== id))
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) alert(err.response?.data?.error || err.message)
+      else if (err instanceof Error) alert(err.message)
+      else alert('Bilinmeyen bir hata oluştu')
+    }
+  }
+
+  const handleEditProduct: ProductListCallbacks['onEdit'] = (product) => {
+    router.push(`/user/products/editProduct/${product._id}`)
   }
 
   return (
@@ -108,7 +117,7 @@ export default function ProductsPage() {
             cursor: 'pointer',
             alignSelf: 'flex-start',
           }}
-          onClick={() => router.push('/user/products/addProduct')}
+          onClick={handleAddProductClick}
         >
           Ürün Ekle
         </button>
