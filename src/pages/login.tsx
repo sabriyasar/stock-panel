@@ -6,7 +6,6 @@ import { Form, Input, Button, message } from 'antd'
 import { MailOutlined, LockOutlined } from '@ant-design/icons'
 import axios, { AxiosError } from 'axios'
 import { io } from 'socket.io-client'
-import { decodeJWT } from '@/utils/jwt'
 
 const socket = io(process.env.NEXT_PUBLIC_API_URL)
 
@@ -16,15 +15,7 @@ export default function UserLoginPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('userToken')
-    if (token) {
-      const decoded = decodeJWT(token)
-      if (decoded && decoded.exp * 1000 > Date.now()) {
-        router.push('/dashboard') // token geçerli → direkt dashboard
-      } else {
-        localStorage.removeItem('userToken')
-        localStorage.removeItem('userInfo')
-      }
-    }
+    if (token) router.push('/dashboard')
   }, [router])
 
   const onFinish = async (values: { email: string; password: string }) => {
@@ -38,10 +29,6 @@ export default function UserLoginPage() {
 
       const { token, user } = res.data
 
-      // Token decode kontrolü
-      const decoded = decodeJWT(token)
-      if (!decoded) throw new Error('Geçersiz token')
-
       // LocalStorage’a kaydet
       localStorage.setItem('userToken', token)
       localStorage.setItem('userInfo', JSON.stringify(user))
@@ -54,7 +41,7 @@ export default function UserLoginPage() {
     } catch (err) {
       const error = err as AxiosError<{ error?: string }>
       console.error('Login başarısız:', error)
-      message.error(error.response?.data?.error || (err instanceof Error ? err.message : 'Email veya şifre hatalı'))
+      message.error(error.response?.data?.error || 'Email veya şifre hatalı')
     } finally {
       setLoading(false)
     }
