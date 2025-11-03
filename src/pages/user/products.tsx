@@ -18,31 +18,32 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [token, setToken] = useState<string | null>(null)
-  const [checkedToken, setCheckedToken] = useState(false) // token kontrol flag
 
   // ✅ Client-side token al
   useEffect(() => {
     const t = localStorage.getItem('token')
-    if (!t) {
-      setToken(null)
-    } else {
+    if (t) {
       setToken(t)
+    } else {
+      setToken(null)
+      setLoading(false) // token yoksa yüklemeyi bitir
     }
-    setCheckedToken(true)
   }, [])
 
-  // ✅ Token hazır olunca ürünleri fetch et
+  // ✅ Token varsa ürünleri fetch et
   useEffect(() => {
-    if (!checkedToken) return // token kontrol edilmediyse bekle
-    if (!token) return // token yoksa fetch etme
+    if (!token) return
 
     const fetchProducts = async () => {
       try {
+        console.log('🌟 Token gönderiliyor:', token)
         const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
           headers: { Authorization: `Bearer ${token}` },
         })
-        setProducts(res.data as Product[])
+        console.log('✅ Backend yanıtı:', res.data)
+        setProducts(res.data)
       } catch (err: unknown) {
+        console.error('❌ Hata:', err)
         if (axios.isAxiosError(err)) setError(err.response?.data?.error || err.message)
         else if (err instanceof Error) setError(err.message)
         else setError('Bilinmeyen bir hata oluştu')
@@ -52,9 +53,9 @@ export default function ProductsPage() {
     }
 
     fetchProducts()
-  }, [token, checkedToken])
+  }, [token])
 
-  if (!checkedToken || loading) {
+  if (loading) {
     return (
       <DashboardLayout>
         <p>Yükleniyor...</p>
@@ -78,9 +79,7 @@ export default function ProductsPage() {
     )
   }
 
-  const handleAddProductClick = () => {
-    router.push('/user/products/addProduct')
-  }
+  const handleAddProductClick = () => router.push('/user/products/addProduct')
 
   const handleDeleteProduct: ProductListCallbacks['onDelete'] = async (id) => {
     if (!token) return
