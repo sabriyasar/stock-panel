@@ -1,9 +1,12 @@
+'use client'
+
 import Head from 'next/head'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import DashboardLayout from '@/components/DashboardLayout'
 import ProductList, { Product } from '@/components/ProductList'
+import { decodeJWT } from '@/utils/jwt'
 
 // ✅ ProductList için callback tipleri
 interface ProductListCallbacks {
@@ -23,53 +26,81 @@ export default function ProductsPage() {
   }
 
   // ✅ Ürünleri fetch et (axios + token)
-  // ✅ Ürünleri fetch et (axios + token)
-useEffect(() => {
-  const fetchProducts = async () => {
-    const api = process.env.NEXT_PUBLIC_API_URL
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const token = localStorage.getItem('userToken')
+      if (!token) {
+        setError('Token bulunamadı. Lütfen tekrar giriş yapın.')
+        setLoading(false)
+        return
+      }
+
+      // Token decode ederek geçerliliğini kontrol et
+      const decoded = decodeJWT(token)
+      if (!decoded || decoded.exp * 1000 < Date.now()) {
+        localStorage.removeItem('userToken')
+        localStorage.removeItem('userInfo')
+        setError('Token süresi dolmuş. Lütfen tekrar giriş yapın.')
+        setLoading(false)
+        return
+      }
+
+      try {
+        const api = process.env.NEXT_PUBLIC_API_URL
+        const res = await axios.get(`${api}/api/products`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        setProducts(res.data as Product[])
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          setError(err.response?.data?.error || 'Ürünler alınamadı')
+        } else if (err instanceof Error) {
+          setError(err.message)
+        } else {
+          setError('Bilinmeyen bir hata oluştu')
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
+
+  // ✅ Ürün silme
+  const handleDeleteProduct: ProductListCallbacks['onDelete'] = async (id) => {
+    const token = localStorage.getItem('userToken')
+    if (!token) {
+      alert('Token bulunamadı. Lütfen tekrar giriş yapın.')
+      return
+    }
+
+    const decoded = decodeJWT(token)
+    if (!decoded || decoded.exp * 1000 < Date.now()) {
+      localStorage.removeItem('userToken')
+      localStorage.removeItem('userInfo')
+      alert('Token süresi dolmuş. Lütfen tekrar giriş yapın.')
+      return
+    }
+
     try {
-      const res = await axios.get(`${api}/api/products`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('userToken')}`, // burayı düzelt
-        },
+      const api = process.env.NEXT_PUBLIC_API_URL
+      await axios.delete(`${api}/api/products/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      setProducts(res.data as Product[])
+      setProducts((prev) => prev.filter((p) => p._id !== id))
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.error || 'Ürünler alınamadı')
+        alert(err.response?.data?.error || 'Ürün silinemedi')
       } else if (err instanceof Error) {
-        setError(err.message)
+        alert(err.message)
       } else {
-        setError('Bilinmeyen bir hata oluştu')
+        alert('Bilinmeyen bir hata oluştu')
       }
-    } finally {
-      setLoading(false)
     }
   }
-
-  fetchProducts()
-}, [])
-
-// ✅ Ürün silme
-const handleDeleteProduct: ProductListCallbacks['onDelete'] = async (id) => {
-  const api = process.env.NEXT_PUBLIC_API_URL
-  try {
-    await axios.delete(`${api}/api/products/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('userToken')}`, // burayı düzelt
-      },
-    })
-    setProducts((prev) => prev.filter((p) => p._id !== id))
-  } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      alert(err.response?.data?.error || 'Ürün silinemedi')
-    } else if (err instanceof Error) {
-      alert(err.message)
-    } else {
-      alert('Bilinmeyen bir hata oluştu')
-    }
-  }
-}
 
   // ✅ Ürün düzenleme
   const handleEditProduct: ProductListCallbacks['onEdit'] = (product) => {
