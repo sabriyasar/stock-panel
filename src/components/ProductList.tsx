@@ -1,14 +1,14 @@
 'use client'
 import { Table, Image, Button, Popconfirm, Space } from 'antd'
 import { ColumnsType } from 'antd/es/table'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 export interface Product {
   _id: string
   name: string
   price: number
   stock: number
-  image?: string // <-- artık string, direkt data URL
+  image?: string
 }
 
 interface Props {
@@ -32,6 +32,11 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
   const handleEdit = (product: Product) => {
     onEdit(product)
   }
+
+  // ✅ En son eklenen ürün en üstte görünsün
+  const sortedProducts = useMemo(() => {
+    return [...products].reverse()
+  }, [products])
 
   const columns: ColumnsType<Product> = [
     {
@@ -58,7 +63,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
       dataIndex: 'stock',
       key: 'stock',
       render: (stock?: number) => (stock ?? 0).toLocaleString('tr-TR'),
-    },    
+    },
     {
       title: 'İşlemler',
       key: 'actions',
@@ -84,7 +89,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
 
   return (
     <Table
-      dataSource={products}
+      dataSource={sortedProducts}
       columns={columns}
       rowKey={(record) => record._id}
       pagination={false}
