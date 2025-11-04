@@ -1,0 +1,81 @@
+.product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  
+    // Üstteki buton alanı
+    &__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+  
+      .header-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+  
+        button {
+          min-width: 110px;
+        }
+      }
+    }
+  
+    // Tablo responsive görünüm
+    .ant-table {
+      overflow-x: auto;
+  
+      table {
+        width: 100%;
+        min-width: 600px;
+      }
+    }
+  
+    // Mobil uyumlu tasarım
+    @media (max-width: 768px) {
+      &__header {
+        flex-direction: column;
+        align-items: stretch;
+        .header-buttons {
+          justify-content: space-between;
+          width: 100%;
+  
+          button {
+            flex: 1;
+          }
+        }
+      }
+  
+      .ant-table {
+        font-size: 13px;
+        table {
+          min-width: unset;
+        }
+  
+        .ant-table-cell {
+          padding: 8px;
+        }
+      }
+  
+      .ant-image-img {
+        width: 40px !important;
+        height: auto;
+      }
+    }
+  
+    @media (max-width: 480px) {
+      .ant-table {
+        font-size: 12px;
+        .ant-table-cell {
+          padding: 6px;
+        }
+      }
+  
+      .header-buttons button {
+        font-size: 12px;
+        padding: 4px 6px;
+      }
+    }
+  }
+  

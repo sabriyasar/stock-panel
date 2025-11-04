@@ -142,25 +142,17 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
   ]
 
   return (
-    <div>
-      {/* ✅ Üstteki butonlar */}
-      <div
-        style={{
-          marginBottom: 16,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <div style={{ display: 'flex', gap: 8 }}>
+    <div className="product-list">
+      <div className="product-list__header">
+        <div className="header-buttons">
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleAddProductClick}
-            >
+          >
             Ürün Ekle
           </Button>
-
+  
           <Dropdown menu={filterMenu} trigger={['click']} placement="bottomRight">
             <Button icon={<FilterOutlined />} style={{ backgroundColor: '#fff' }}>
               Filtrele
@@ -168,8 +160,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
           </Dropdown>
         </div>
       </div>
-
-      {/* ✅ Ürün Tablosu */}
+  
       <Table
         dataSource={filteredProducts}
         columns={columns}
@@ -178,7 +169,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
         loading={loading}
       />
     </div>
-  )
+  )  
 }
 
 export default ProductList
