@@ -81,12 +81,12 @@ export default function DashboardLayout({ children }: Props) {
               <span className="text">Ürünler</span>
             </Link>
           </li>
-          <li className={router.pathname === '/user/settings' ? 'active' : ''}>
+          {/* <li className={router.pathname === '/user/settings' ? 'active' : ''}>
             <Link href="/user/settings">
               <SettingOutlined className="icon" />
               <span className="text">Ayarlar</span>
             </Link>
-          </li>
+          </li> */}
           <li onClick={handleLogout} style={{ cursor: 'pointer', color: 'white', marginTop: 16 }}>
             <LogoutOutlined className="icon" />
             <span className="text">Çıkış Yap</span>
