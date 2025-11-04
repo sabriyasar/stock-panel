@@ -1,7 +1,8 @@
 'use client'
-import { Table, Image, Button, Popconfirm, Space, Select } from 'antd'
+import { Table, Image, Button, Popconfirm, Space, Radio } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { useState, useMemo } from 'react'
+import { PlusOutlined } from '@ant-design/icons'
 
 export interface Product {
   _id: string
@@ -34,12 +35,12 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
     onEdit(product)
   }
 
-  // ✅ Ürünleri hem filtrele hem ters sırala
+  // ✅ Ürünleri filtrele ve ters sırala (son eklenen en üstte)
   const filteredProducts = useMemo(() => {
     let result = [...products]
     if (filter === 'inStock') result = result.filter((p) => p.stock > 0)
     else if (filter === 'outOfStock') result = result.filter((p) => p.stock === 0)
-    return result.reverse() // En son eklenen en üstte
+    return result.reverse()
   }, [products, filter])
 
   const columns: ColumnsType<Product> = [
@@ -97,18 +98,33 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
 
   return (
     <div>
-      {/* ✅ Filtre Seçimi */}
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
-        <Select
+      {/* ✅ Üst Kısım: Ürün Ekle + Filtre Butonları */}
+      <div
+        style={{
+          marginBottom: 16,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => onEdit({ _id: '', name: '', price: 0, stock: 0 })}
+        >
+          Ürün Ekle
+        </Button>
+
+        <Radio.Group
           value={filter}
-          onChange={(value) => setFilter(value)}
-          style={{ width: 200 }}
-          options={[
-            { value: 'all', label: 'Tüm Ürünler' },
-            { value: 'inStock', label: 'Stoktakiler' },
-            { value: 'outOfStock', label: 'Stoğu Bitenler' },
-          ]}
-        />
+          onChange={(e) => setFilter(e.target.value)}
+          optionType="button"
+          buttonStyle="solid"
+        >
+          <Radio.Button value="all">Tüm Ürünler</Radio.Button>
+          <Radio.Button value="inStock">Stoktakiler</Radio.Button>
+          <Radio.Button value="outOfStock">Stoğu Bitenler</Radio.Button>
+        </Radio.Group>
       </div>
 
       {/* ✅ Ürün Tablosu */}
