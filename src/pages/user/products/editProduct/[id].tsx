@@ -1,4 +1,3 @@
-// src/pages/user/products/[id].tsx (EditProductPage)
 'use client'
 
 import Head from 'next/head'
@@ -6,6 +5,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import ProductForm from '@/components/ProductForm'
+import axios, { AxiosError } from 'axios'
 
 // ✅ Product tipi (ProductList ile uyumlu)
 export interface Product {
@@ -28,22 +28,26 @@ export default function EditProductPage() {
   useEffect(() => {
     if (!id) return
     const api = process.env.NEXT_PUBLIC_API_URL
+    const token = localStorage.getItem('userToken')
+
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`${api}/api/products/${id}`)
-        if (!res.ok) {
-          const errData = await res.json()
-          throw new Error(errData.error || 'Ürün alınamadı')
-        }
-        const data = await res.json()
-        setProduct(data)
-      } catch (err: unknown) {
-        if (err instanceof Error) setError(err.message)
-        else setError('Bilinmeyen bir hata oluştu')
+        const res = await axios.get<Product>(`${api}/api/products/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        setProduct(res.data)
+      } catch (err) {
+        const axiosError = err as AxiosError<{ error?: string }>
+        setError(
+          axiosError.response?.data?.error ||
+            axiosError.message ||
+            'Ürün alınamadı'
+        )
       } finally {
         setLoading(false)
       }
     }
+
     fetchProduct()
   }, [id])
 
@@ -51,27 +55,31 @@ export default function EditProductPage() {
   const handleUpdateProduct = async (updated: Product & { imageFile?: File }) => {
     if (!id) return
     const api = process.env.NEXT_PUBLIC_API_URL
+    const token = localStorage.getItem('userToken')
+
     try {
       const formData = new FormData()
       formData.append('name', updated.name)
       formData.append('price', updated.price.toString())
       formData.append('stock', updated.stock.toString())
+      if (updated.barcode) formData.append('barcode', updated.barcode)
       if (updated.imageFile) formData.append('image', updated.imageFile)
 
-      const res = await fetch(`${api}/api/products/${id}`, {
-        method: 'PUT',
-        body: formData,
+      await axios.put(`${api}/api/products/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
       })
 
-      if (!res.ok) {
-        const errData = await res.json()
-        throw new Error(errData.error || 'Güncelleme başarısız')
-      }
-
       router.push('/user/products')
-    } catch (err: unknown) {
-      if (err instanceof Error) alert(err.message)
-      else alert('Bilinmeyen bir hata oluştu')
+    } catch (err) {
+      const axiosError = err as AxiosError<{ error?: string }>
+      alert(
+        axiosError.response?.data?.error ||
+          axiosError.message ||
+          'Güncelleme başarısız'
+      )
     }
   }
 
