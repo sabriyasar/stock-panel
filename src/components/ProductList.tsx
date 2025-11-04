@@ -1,8 +1,8 @@
 'use client'
-import { Table, Image, Button, Popconfirm, Space, Radio } from 'antd'
+import { Table, Image, Button, Popconfirm, Space, Dropdown, Checkbox, MenuProps } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { useState, useMemo } from 'react'
-import { PlusOutlined } from '@ant-design/icons'
+import { FilterOutlined, PlusOutlined } from '@ant-design/icons'
 
 export interface Product {
   _id: string
@@ -20,7 +20,10 @@ interface Props {
 
 const ProductList = ({ products, onDelete, onEdit }: Props) => {
   const [loading, setLoading] = useState(false)
-  const [filter, setFilter] = useState<'all' | 'inStock' | 'outOfStock'>('all')
+  const [filters, setFilters] = useState({
+    inStock: false,
+    outOfStock: false,
+  })
 
   const handleDelete = (id: string) => {
     setLoading(true)
@@ -35,13 +38,50 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
     onEdit(product)
   }
 
-  // ✅ Ürünleri filtrele ve ters sırala (son eklenen en üstte)
+  // ✅ Checkbox filtreleme mantığı
   const filteredProducts = useMemo(() => {
     let result = [...products]
-    if (filter === 'inStock') result = result.filter((p) => p.stock > 0)
-    else if (filter === 'outOfStock') result = result.filter((p) => p.stock === 0)
+    if (filters.inStock && !filters.outOfStock) {
+      result = result.filter((p) => p.stock > 0)
+    } else if (!filters.inStock && filters.outOfStock) {
+      result = result.filter((p) => p.stock === 0)
+    } else if (!filters.inStock && !filters.outOfStock) {
+      result = result // tüm ürünler
+    }
     return result.reverse()
-  }, [products, filter])
+  }, [products, filters])
+
+  // ✅ Dropdown menüsü
+  const filterMenu: MenuProps = {
+    items: [
+      {
+        key: 'inStock',
+        label: (
+          <Checkbox
+            checked={filters.inStock}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, inStock: e.target.checked }))
+            }
+          >
+            Stoktakiler
+          </Checkbox>
+        ),
+      },
+      {
+        key: 'outOfStock',
+        label: (
+          <Checkbox
+            checked={filters.outOfStock}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, outOfStock: e.target.checked }))
+            }
+          >
+            Stoğu Bitenler
+          </Checkbox>
+        ),
+      },
+    ],
+  }
 
   const columns: ColumnsType<Product> = [
     {
@@ -98,7 +138,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
 
   return (
     <div>
-      {/* ✅ Üst Kısım: Ürün Ekle + Filtre Butonları */}
+      {/* ✅ Üstteki butonlar */}
       <div
         style={{
           marginBottom: 16,
@@ -107,24 +147,21 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
           alignItems: 'center',
         }}
       >
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => onEdit({ _id: '', name: '', price: 0, stock: 0 })}
-        >
-          Ürün Ekle
-        </Button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => onEdit({ _id: '', name: '', price: 0, stock: 0 })}
+          >
+            Ürün Ekle
+          </Button>
 
-        <Radio.Group
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          optionType="button"
-          buttonStyle="solid"
-        >
-          <Radio.Button value="all">Tüm Ürünler</Radio.Button>
-          <Radio.Button value="inStock">Stoktakiler</Radio.Button>
-          <Radio.Button value="outOfStock">Stoğu Bitenler</Radio.Button>
-        </Radio.Group>
+          <Dropdown menu={filterMenu} trigger={['click']} placement="bottomRight">
+            <Button icon={<FilterOutlined />} style={{ backgroundColor: '#fff' }}>
+              Filtrele
+            </Button>
+          </Dropdown>
+        </div>
       </div>
 
       {/* ✅ Ürün Tablosu */}
