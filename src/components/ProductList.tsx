@@ -1,5 +1,5 @@
 'use client'
-import { Table, Image, Button, Popconfirm, Space } from 'antd'
+import { Table, Image, Button, Popconfirm, Space, Select } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { useState, useMemo } from 'react'
 
@@ -19,6 +19,7 @@ interface Props {
 
 const ProductList = ({ products, onDelete, onEdit }: Props) => {
   const [loading, setLoading] = useState(false)
+  const [filter, setFilter] = useState<'all' | 'inStock' | 'outOfStock'>('all')
 
   const handleDelete = (id: string) => {
     setLoading(true)
@@ -33,10 +34,13 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
     onEdit(product)
   }
 
-  // ✅ En son eklenen ürün en üstte görünsün
-  const sortedProducts = useMemo(() => {
-    return [...products].reverse()
-  }, [products])
+  // ✅ Ürünleri hem filtrele hem ters sırala
+  const filteredProducts = useMemo(() => {
+    let result = [...products]
+    if (filter === 'inStock') result = result.filter((p) => p.stock > 0)
+    else if (filter === 'outOfStock') result = result.filter((p) => p.stock === 0)
+    return result.reverse() // En son eklenen en üstte
+  }, [products, filter])
 
   const columns: ColumnsType<Product> = [
     {
@@ -62,7 +66,11 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
       title: 'Stok',
       dataIndex: 'stock',
       key: 'stock',
-      render: (stock?: number) => (stock ?? 0).toLocaleString('tr-TR'),
+      render: (stock?: number) => (
+        <span style={{ color: stock && stock > 0 ? 'green' : 'red' }}>
+          {stock ?? 0}
+        </span>
+      ),
     },
     {
       title: 'İşlemler',
@@ -88,13 +96,30 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
   ]
 
   return (
-    <Table
-      dataSource={sortedProducts}
-      columns={columns}
-      rowKey={(record) => record._id}
-      pagination={false}
-      loading={loading}
-    />
+    <div>
+      {/* ✅ Filtre Seçimi */}
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
+        <Select
+          value={filter}
+          onChange={(value) => setFilter(value)}
+          style={{ width: 200 }}
+          options={[
+            { value: 'all', label: 'Tüm Ürünler' },
+            { value: 'inStock', label: 'Stoktakiler' },
+            { value: 'outOfStock', label: 'Stoğu Bitenler' },
+          ]}
+        />
+      </div>
+
+      {/* ✅ Ürün Tablosu */}
+      <Table
+        dataSource={filteredProducts}
+        columns={columns}
+        rowKey={(record) => record._id}
+        pagination={false}
+        loading={loading}
+      />
+    </div>
   )
 }
 
