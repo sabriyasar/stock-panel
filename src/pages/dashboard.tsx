@@ -25,9 +25,20 @@ export default function UserPanel() {
     const fetchStats = async () => {
       try {
         const api = process.env.NEXT_PUBLIC_API_URL
-        const res = await axios.get(`${api}/api/users/stats/products`)
+        const token = localStorage.getItem('userToken') // JWT buradaysa doğru
+        if (!token) {
+          message.error('Kullanıcı oturumu bulunamadı')
+          return
+        }
+
+        // ✅ endpoint düzeltildi
+        const res = await axios.get(`${api}/api/products/stats/products`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
         const data = res.data
-        // Silinen ürün sayısını hesapla
         const deletedCount = data.totalProducts - data.inStock - data.outOfStock
         setStats({ ...data, deleted: deletedCount })
       } catch (err) {
