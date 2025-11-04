@@ -3,6 +3,7 @@ import { Table, Image, Button, Popconfirm, Space, Dropdown, Checkbox, MenuProps 
 import { ColumnsType } from 'antd/es/table'
 import { useState, useMemo } from 'react'
 import { FilterOutlined, PlusOutlined } from '@ant-design/icons'
+import { useRouter } from 'next/router'
 
 export interface Product {
   _id: string
@@ -19,6 +20,7 @@ interface Props {
 }
 
 const ProductList = ({ products, onDelete, onEdit }: Props) => {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [filters, setFilters] = useState({
     inStock: false,
@@ -51,6 +53,9 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
     return result.reverse()
   }, [products, filters])
 
+  const handleAddProductClick = () => {
+    router.push('/user/products/addProduct')
+  }
   // ✅ Dropdown menüsü
   const filterMenu: MenuProps = {
     items: [
@@ -151,8 +156,8 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => onEdit({ _id: '', name: '', price: 0, stock: 0 })}
-          >
+            onClick={handleAddProductClick}
+            >
             Ürün Ekle
           </Button>
 

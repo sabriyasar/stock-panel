@@ -17,11 +17,6 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // ✅ Ürün ekleme sayfasına yönlendirme
-  const handleAddProductClick = () => {
-    router.push('/user/products/addProduct')
-  }
-
   // ✅ Ürünleri fetch et (axios + token)
   // ✅ Ürünleri fetch et (axios + token)
 useEffect(() => {
@@ -99,21 +94,6 @@ const handleDeleteProduct: ProductListCallbacks['onDelete'] = async (id) => {
       </Head>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <button
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#1890ff',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: 'pointer',
-            alignSelf: 'flex-start',
-          }}
-          onClick={handleAddProductClick}
-        >
-          Ürün Ekle
-        </button>
-
         <ProductList
           products={products}
           onDelete={handleDeleteProduct}
