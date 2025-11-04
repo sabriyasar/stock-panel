@@ -1,29 +1,26 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Form, Input, InputNumber, Button, Upload, message, Modal } from 'antd'
+import { Form, Input, Button, Upload, message, Modal } from 'antd'
 import type { RcFile, UploadFile } from 'antd/es/upload/interface'
 import { UploadOutlined, QrcodeOutlined } from '@ant-design/icons'
 import BarcodeScannerComponent from 'react-qr-barcode-scanner'
 
-// ✅ Product tipi (frontend tüm komponentlerde uyumlu)
 export interface Product {
   _id: string
   name: string
   price: number
   stock: number
-  image?: string // artık string, direkt data URL
+  image?: string
   barcode?: string
 }
 
-// ✅ Props tipi
 interface Props {
   product?: Product
   onAddProduct: (product: Product & { imageFile?: File }) => void
   isEdit?: boolean
 }
 
-// ✅ Form değerleri tipi
 interface ProductFormValues {
   name: string
   price: number
@@ -35,19 +32,22 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
   const [form] = Form.useForm<ProductFormValues>()
   const [fileList, setFileList] = useState<UploadFile[]>([])
   const [scannerVisible, setScannerVisible] = useState(false)
+  const [priceInput, setPriceInput] = useState<string>('')
 
-  // Formu edit moduna göre doldur
+  // ⚙️ Formu doldur - React 19 uyarısına uygun hale getirildi
   useEffect(() => {
     if (product) {
-      form.setFieldsValue({
-        name: product.name,
-        price: product.price,
-        stock: product.stock,
-        barcode: product.barcode || '',
-      })
+      // React’in önerisine göre state set işlemini mikrotask’a erteledik
+      queueMicrotask(() => {
+        form.setFieldsValue({
+          name: product.name,
+          stock: product.stock,
+          barcode: product.barcode || '',
+        })
 
-      if (product.image) {
-        setTimeout(() => {
+        setPriceInput(product.price.toString().replace('.', ','))
+
+        if (product.image) {
           setFileList([
             {
               uid: '-1',
@@ -56,8 +56,8 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
               url: product.image,
             },
           ])
-        }, 0)
-      }
+        }
+      })
     }
   }, [product, form])
 
@@ -66,12 +66,16 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
     return false
   }
 
+  // ✅ Tip düzeltildi, any kaldırıldı
   const onFinish = (values: ProductFormValues) => {
     const imageFile = fileList[0]?.originFileObj as RcFile | undefined
 
-    // Barcode ve image artık opsiyonel
+    // Fiyat virgül veya noktalı olabilir
+    const numericPrice = parseFloat(priceInput.replace(',', '.'))
+
     onAddProduct({
       ...values,
+      price: numericPrice,
       _id: product?._id ?? '',
       imageFile,
     })
@@ -79,6 +83,7 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
     if (!isEdit) {
       form.resetFields()
       setFileList([])
+      setPriceInput('')
       message.success('Form başarıyla gönderildi!')
     }
   }
@@ -96,10 +101,21 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
 
         <Form.Item
           label="Fiyat"
-          name="price"
-          rules={[{ required: true, message: 'Lütfen fiyat girin' }]}
+          required
+          tooltip="Virgül veya nokta kullanabilirsiniz (örn: 12,50)"
         >
-          <InputNumber min={0} style={{ width: '100%' }} />
+          <Input
+            type="text"
+            value={priceInput}
+            onChange={(e) => {
+              const value = e.target.value
+              // Sadece rakam, nokta ve virgül izinli
+              if (/^[0-9.,]*$/.test(value)) {
+                setPriceInput(value)
+              }
+            }}
+            placeholder="örn: 12,50 veya 12.50"
+          />
         </Form.Item>
 
         <Form.Item
@@ -107,7 +123,7 @@ const ProductForm = ({ product, onAddProduct, isEdit }: Props) => {
           name="stock"
           rules={[{ required: true, message: 'Lütfen stok adedi girin' }]}
         >
-          <InputNumber min={0} style={{ width: '100%' }} />
+          <Input type="number" min={0} />
         </Form.Item>
 
         <Form.Item
