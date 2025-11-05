@@ -101,7 +101,22 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
         />
       ),
     },
-    { title: 'Ürün Adı', dataIndex: 'name', key: 'name' },
+    {
+      title: 'Ürün Adı',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string) => (
+        <div
+          style={{
+            maxWidth: 250, // 35 karakterlik genişliğe yakın px değeri
+            whiteSpace: 'normal', // satır taşmasına izin ver
+            wordBreak: 'break-word', // kelime ortasında kırılabilir
+          }}
+        >
+          {name}
+        </div>
+      ),
+    },    
     {
       title: 'Fiyat',
       dataIndex: 'price',
