@@ -1,8 +1,8 @@
 'use client'
-import { Table, Image, Button, Popconfirm, Space, Dropdown, Checkbox, MenuProps } from 'antd'
+import { Table, Image, Button, Popconfirm, Space, Dropdown, Checkbox, MenuProps, Input } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { useState, useMemo } from 'react'
-import { FilterOutlined, PlusOutlined } from '@ant-design/icons'
+import { FilterOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 
 export interface Product {
@@ -26,6 +26,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
     inStock: false,
     outOfStock: false,
   })
+  const [search, setSearch] = useState('')
 
   const handleDelete = (id: string) => {
     setLoading(true)
@@ -40,22 +41,34 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
     onEdit(product)
   }
 
-  // ✅ Checkbox filtreleme mantığı
+  // ✅ Checkbox filtreleme + arama mantığı
   const filteredProducts = useMemo(() => {
     let result = [...products]
+
+    // stok filtreleri
     if (filters.inStock && !filters.outOfStock) {
       result = result.filter((p) => p.stock > 0)
     } else if (!filters.inStock && filters.outOfStock) {
       result = result.filter((p) => p.stock === 0)
-    } else if (!filters.inStock && !filters.outOfStock) {
-      result = result // tüm ürünler
     }
+
+    // arama filtreleri
+    if (search.trim() !== '') {
+      const s = search.toLowerCase()
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(s) ||
+          p.price.toString().includes(s)
+      )
+    }
+
     return result.reverse()
-  }, [products, filters])
+  }, [products, filters, search])
 
   const handleAddProductClick = () => {
     router.push('/user/products/addProduct')
   }
+
   // ✅ Dropdown menüsü
   const filterMenu: MenuProps = {
     items: [
@@ -86,7 +99,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
         ),
       },
     ],
-  }  
+  }
 
   const columns: ColumnsType<Product> = [
     {
@@ -108,15 +121,15 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
       render: (name: string) => (
         <div
           style={{
-            maxWidth: 250, // 35 karakterlik genişliğe yakın px değeri
-            whiteSpace: 'normal', // satır taşmasına izin ver
-            wordBreak: 'break-word', // kelime ortasında kırılabilir
+            maxWidth: 250,
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
           }}
         >
           {name}
         </div>
       ),
-    },    
+    },
     {
       title: 'Fiyat',
       dataIndex: 'price',
@@ -158,8 +171,8 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
 
   return (
     <div className="product-list">
-      <div className="product-list__header">
-        <div className="header-buttons">
+      <div className="product-list__header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div className="header-buttons" style={{ display: 'flex', gap: 8 }}>
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -167,15 +180,24 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
           >
             Ürün Ekle
           </Button>
-  
+
           <Dropdown menu={filterMenu} trigger={['click']} placement="bottomRight">
             <Button icon={<FilterOutlined />} style={{ backgroundColor: '#fff' }}>
               Filtrele
             </Button>
           </Dropdown>
+
+          <Input
+            placeholder="Ürün adı veya fiyat ara"
+            prefix={<SearchOutlined />}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ width: 200 }}
+            allowClear
+          />
         </div>
       </div>
-  
+
       <Table
         dataSource={filteredProducts}
         columns={columns}
@@ -184,7 +206,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
         loading={loading}
       />
     </div>
-  )  
+  )
 }
 
 export default ProductList
