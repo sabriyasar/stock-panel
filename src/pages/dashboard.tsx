@@ -52,8 +52,9 @@ export default function UserPanel() {
 
   return (
     <DashboardLayout>
-      <Title level={2}>Kullanıcı Paneli</Title>
-      <Paragraph>Buradan ürünleri görebilir ve yönetebilirsiniz.</Paragraph>
+<Title level={2} className="panel-title">Kullanıcı Paneli</Title>
+<Paragraph className="panel-desc">Buradan ürünleri görebilir ve yönetebilirsiniz.</Paragraph>
+
 
       <Row gutter={16}>
         <Col span={6}>
