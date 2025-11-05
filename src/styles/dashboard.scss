@@ -99,20 +99,6 @@
     padding: 20px;
     overflow-y: auto;
     transition: margin-left 0.3s ease, width 0.3s ease;
-
-    // --- Mobilde istatistik kartları 2x2 düzeni ---
-    .ant-row {
-      @media (max-width: 768px) {
-        display: flex;
-        flex-wrap: wrap;
-        margin: 0 -8px;
-
-        .ant-col {
-          width: 50% !important;
-          padding: 0 8px 16px; // kolonlar arası boşluk
-        }
-      }
-    }
   }
 
   /* --- Sidebar daraltılmış görünüm --- */
@@ -149,7 +135,7 @@
     }
   }
 
-  /* --- Mobil sidebar ve header --- */
+  /* --- Mobil görünüm --- */
   @media (max-width: 768px) {
     flex-direction: column;
 
@@ -167,7 +153,19 @@
 
     .main {
       margin-left: 0;
-      padding: 16px;
+      padding: 0px;
+
+      // Mobilde istatistik kartları her satırda 2 kart olacak
+      .ant-row {
+        margin: 0 -8px;
+        flex-wrap: wrap; // kartların alt satıra geçmesini sağlar
+
+        .ant-col {
+          padding: 0 8px 16px;
+          flex: 0 0 50% !important; // her kart genişliği %50
+          max-width: 50% !important; // maksimum genişlik %50
+        }
+      }
     }
 
     .mobile-header {
