@@ -65,7 +65,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
           <Checkbox
             checked={filters.inStock}
             onChange={(e) =>
-              setFilters((prev) => ({ ...prev, inStock: e.target.checked }))
+              setFilters({ inStock: e.target.checked, outOfStock: false })
             }
           >
             Stoktakiler
@@ -78,7 +78,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
           <Checkbox
             checked={filters.outOfStock}
             onChange={(e) =>
-              setFilters((prev) => ({ ...prev, outOfStock: e.target.checked }))
+              setFilters({ outOfStock: e.target.checked, inStock: false })
             }
           >
             Stoğu Bitenler
@@ -86,7 +86,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
         ),
       },
     ],
-  }
+  }  
 
   const columns: ColumnsType<Product> = [
     {
