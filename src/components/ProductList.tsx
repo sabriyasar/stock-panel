@@ -1,9 +1,11 @@
 'use client'
+
 import { Table, Image, Button, Popconfirm, Space, Dropdown, Checkbox, MenuProps, Input } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { useState, useMemo } from 'react'
 import { FilterOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { useRouter } from 'next/router'
+import axios from 'axios'
 
 export interface Product {
   _id: string
@@ -21,12 +23,14 @@ interface Props {
 
 const ProductList = ({ products, onDelete, onEdit }: Props) => {
   const router = useRouter()
+  const api = process.env.NEXT_PUBLIC_API_URL
+
   const [loading, setLoading] = useState(false)
-  const [filters, setFilters] = useState({
-    inStock: false,
-    outOfStock: false,
-  })
+  const [filters, setFilters] = useState({ inStock: false, outOfStock: false })
   const [search, setSearch] = useState('')
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([])
+  const [creatingCatalog, setCreatingCatalog] = useState(false)
+  const [catalogLink, setCatalogLink] = useState<string | null>(null)
 
   const handleDelete = (id: string) => {
     setLoading(true)
@@ -41,24 +45,16 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
     onEdit(product)
   }
 
-  // ✅ Checkbox filtreleme + arama mantığı
   const filteredProducts = useMemo(() => {
     let result = [...products]
 
-    // stok filtreleri
-    if (filters.inStock && !filters.outOfStock) {
-      result = result.filter((p) => p.stock > 0)
-    } else if (!filters.inStock && filters.outOfStock) {
-      result = result.filter((p) => p.stock === 0)
-    }
+    if (filters.inStock && !filters.outOfStock) result = result.filter((p) => p.stock > 0)
+    else if (!filters.inStock && filters.outOfStock) result = result.filter((p) => p.stock === 0)
 
-    // arama filtreleri
     if (search.trim() !== '') {
       const s = search.toLowerCase()
       result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(s) ||
-          p.price.toString().includes(s)
+        (p) => p.name.toLowerCase().includes(s) || p.price.toString().includes(s)
       )
     }
 
@@ -69,7 +65,6 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
     router.push('/user/products/addProduct')
   }
 
-  // ✅ Dropdown menüsü
   const filterMenu: MenuProps = {
     items: [
       {
@@ -77,9 +72,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
         label: (
           <Checkbox
             checked={filters.inStock}
-            onChange={(e) =>
-              setFilters({ inStock: e.target.checked, outOfStock: false })
-            }
+            onChange={(e) => setFilters({ inStock: e.target.checked, outOfStock: false })}
           >
             Stoktakiler
           </Checkbox>
@@ -90,9 +83,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
         label: (
           <Checkbox
             checked={filters.outOfStock}
-            onChange={(e) =>
-              setFilters({ outOfStock: e.target.checked, inStock: false })
-            }
+            onChange={(e) => setFilters({ outOfStock: e.target.checked, inStock: false })}
           >
             Stoğu Bitenler
           </Checkbox>
@@ -101,14 +92,53 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
     ],
   }
 
+  const handleSelectForCatalog = (id: string, checked: boolean) => {
+    setSelectedProducts((prev) => (checked ? [...prev, id] : prev.filter((pId) => pId !== id)))
+  }
+
+  const handleCreateCatalog = async () => {
+    if (selectedProducts.length === 0) {
+      alert('Lütfen en az bir ürün seçin')
+      return
+    }
+    setCreatingCatalog(true)
+    try {
+      const res = await axios.post(
+        `${api}/api/catalogs`,
+        { productIds: selectedProducts },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` },
+          withCredentials: true, // gerekirse
+        }
+      )
+      const uuid = res.data.uuid
+      setCatalogLink(`${window.location.origin}/catalog/${uuid}`)
+    } catch (err) {
+      console.error(err)
+      alert('Katalog oluşturulamadı')
+    } finally {
+      setCreatingCatalog(false)
+    }
+  }
+
   const columns: ColumnsType<Product> = [
+    {
+      title: 'Seç',
+      key: 'select',
+      render: (_: Product, record: Product) => (
+        <Checkbox
+          checked={selectedProducts.includes(record._id)}
+          onChange={(e) => handleSelectForCatalog(record._id, e.target.checked)}
+        />
+      ),
+    },
     {
       title: 'Fotoğraf',
       dataIndex: 'image',
       key: 'image',
-      render: (image: string | undefined) => (
+      render: (_: string | undefined, record: Product) => (
         <Image
-          src={image || '/assets/placeholder.jpg'}
+          src={record.image || '/assets/placeholder.jpg'}
           width={60}
           fallback="/assets/placeholder.jpg"
         />
@@ -119,15 +149,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
       dataIndex: 'name',
       key: 'name',
       render: (name: string) => (
-        <div
-          style={{
-            maxWidth: 250,
-            whiteSpace: 'normal',
-            wordBreak: 'break-word',
-          }}
-        >
-          {name}
-        </div>
+        <div style={{ maxWidth: 250, whiteSpace: 'normal', wordBreak: 'break-word' }}>{name}</div>
       ),
     },
     {
@@ -141,15 +163,13 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
       dataIndex: 'stock',
       key: 'stock',
       render: (stock?: number) => (
-        <span style={{ color: stock && stock > 0 ? 'green' : 'red' }}>
-          {stock ?? 0}
-        </span>
+        <span style={{ color: stock && stock > 0 ? 'green' : 'red' }}>{stock ?? 0}</span>
       ),
     },
     {
       title: 'İşlemler',
       key: 'actions',
-      render: (_: unknown, record: Product) => (
+      render: (_: Product, record: Product) => (
         <Space size="middle">
           <Button type="primary" onClick={() => handleEdit(record)}>
             Düzenle
@@ -171,13 +191,12 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
 
   return (
     <div className="product-list">
-      <div className="product-list__header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div className="header-buttons" style={{ display: 'flex', gap: 8 }}>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAddProductClick}
-          >
+      <div
+        className="product-list__header"
+        style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}
+      >
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddProductClick}>
             Ürün Ekle
           </Button>
 
@@ -195,8 +214,21 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
             style={{ width: 200 }}
             allowClear
           />
+
+          <Button type="default" onClick={handleCreateCatalog} disabled={creatingCatalog}>
+            {creatingCatalog ? 'Oluşturuluyor...' : 'Katalog Oluştur'}
+          </Button>
         </div>
       </div>
+
+      {catalogLink && (
+        <div style={{ marginBottom: 16 }}>
+          <p>Katalog linki:</p>
+          <a href={catalogLink} target="_blank" rel="noopener noreferrer">
+            {catalogLink}
+          </a>
+        </div>
+      )}
 
       <Table
         dataSource={filteredProducts}

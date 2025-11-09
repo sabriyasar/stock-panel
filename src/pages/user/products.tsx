@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import DashboardLayout from '@/components/DashboardLayout'
 import ProductList, { Product } from '@/components/ProductList'
+import ProductCatalogCreator from '@/components/ProductCatalogCreator'
 
 // ✅ ProductList için callback tipleri
 interface ProductListCallbacks {
@@ -100,6 +101,7 @@ const handleDeleteProduct: ProductListCallbacks['onDelete'] = async (id) => {
           onEdit={handleEditProduct}
         />
       </div>
+      <ProductCatalogCreator products={products} />
     </DashboardLayout>
   )
 }
