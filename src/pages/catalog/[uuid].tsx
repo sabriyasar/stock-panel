@@ -20,11 +20,13 @@ export default function CatalogPage() {
 
   useEffect(() => {
     if (!uuid) return;
-
+  
     const fetchCatalog = async () => {
       try {
-        const res = await axios.get(`/api/catalogs/${uuid}`);
-        setProducts(res.data.products);
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/catalogs/${uuid}`
+        );
+        setProducts(res.data.products || []);
       } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
           setError(err.response?.data?.error || 'Katalog alınamadı');
@@ -37,9 +39,9 @@ export default function CatalogPage() {
         setLoading(false);
       }
     };
-
+  
     fetchCatalog();
-  }, [uuid]);
+  }, [uuid]);  
 
   if (loading) return <p>Yükleniyor...</p>;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
