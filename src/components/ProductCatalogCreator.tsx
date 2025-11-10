@@ -31,6 +31,7 @@ export default function ProductCatalogCreator({ products }: Props) {
         { productIds: selectedProducts },
         { headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` } }
       )
+      console.log('Katalog oluşturma yanıtı:', res.data)
       const uuid = res.data.uuid
       setCatalogLink(`${window.location.origin}/catalog/${uuid}`)
     } catch (err) {
