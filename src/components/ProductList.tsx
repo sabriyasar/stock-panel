@@ -3,7 +3,7 @@
 import { Table, Image, Button, Popconfirm, Space, Dropdown, Checkbox, MenuProps, Input } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { useState, useMemo } from 'react'
-import { FilterOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { FilterOutlined, PlusOutlined, SearchOutlined, CopyOutlined } from '@ant-design/icons'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 
@@ -108,7 +108,7 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
         { productIds: selectedProducts },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` },
-          withCredentials: true, // gerekirse
+          withCredentials: true,
         }
       )
       const uuid = res.data.uuid
@@ -119,6 +119,11 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
     } finally {
       setCreatingCatalog(false)
     }
+  }
+
+  const handleCopyLink = (link: string) => {
+    navigator.clipboard.writeText(link)
+    alert('Katalog linki kopyalandı!')
   }
 
   const columns: ColumnsType<Product> = [
@@ -218,15 +223,20 @@ const ProductList = ({ products, onDelete, onEdit }: Props) => {
           <Button type="default" onClick={handleCreateCatalog} disabled={creatingCatalog}>
             {creatingCatalog ? 'Oluşturuluyor...' : 'Katalog Oluştur'}
           </Button>
+
+          <Button type="default" onClick={() => router.push('/catalog/catalogs')}>
+            Kataloglarım
+          </Button>
         </div>
       </div>
 
       {catalogLink && (
-        <div style={{ marginBottom: 16 }}>
-          <p>Katalog linki:</p>
+        <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <p style={{ margin: 0 }}>Katalog linki:</p>
           <a href={catalogLink} target="_blank" rel="noopener noreferrer">
             {catalogLink}
           </a>
+          <Button icon={<CopyOutlined />} onClick={() => handleCopyLink(catalogLink)} />
         </div>
       )}
 
