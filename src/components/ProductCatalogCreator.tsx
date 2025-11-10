@@ -27,10 +27,15 @@ export default function ProductCatalogCreator({ products }: Props) {
     setCreating(true)
     try {
       const res = await axios.post(
-        '/api/catalogs',
+        `${process.env.NEXT_PUBLIC_API_URL}/api/catalogs`,  // tam URL
         { productIds: selectedProducts },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` } }
-      )
+        {
+          headers: { 
+            Authorization: `Bearer ${localStorage.getItem('userToken')}` 
+          },
+          withCredentials: true, // gerekirse
+        }
+      );      
       console.log('Katalog oluşturma yanıtı:', res.data)
       const uuid = res.data.uuid
       setCatalogLink(`${window.location.origin}/catalog/${uuid}`)
