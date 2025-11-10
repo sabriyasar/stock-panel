@@ -23,7 +23,6 @@ export default function Catalogs() {
       const res = await axios.get(`${api}/api/catalogs/my-catalogs`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` },
       })
-      console.log('API Yanıtı:', res.data) // debug için
       setCatalogs(res.data.catalogs || res.data)
     } catch (err) {
       console.error(err)
@@ -66,13 +65,10 @@ export default function Catalogs() {
     }
     setBulkDeleting(true)
     try {
-      await Promise.all(
-        selectedCatalogs.map((uuid) =>
-          axios.delete(`${api}/api/catalogs/${uuid}`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` },
-          })
-        )
-      )
+      await axios.delete(`${api}/api/catalogs/bulk-delete`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` },
+        data: { uuids: selectedCatalogs },
+      })
       setCatalogs((prev) => prev.filter((c) => !selectedCatalogs.includes(c.uuid)))
       setSelectedCatalogs([])
       message.success('Seçilen kataloglar silindi')
@@ -110,7 +106,7 @@ export default function Catalogs() {
         dataSource={catalogs}
         renderItem={(catalog) => (
           <List.Item
-            key={catalog.uuid} // ListItem için key
+            key={catalog.uuid}
             actions={[
               <Tooltip key={`copy-${catalog.uuid}`} title="Kopyala">
                 <Button type="link" onClick={() => handleCopy(catalog.uuid)}>
